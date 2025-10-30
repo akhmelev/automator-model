@@ -1,7 +1,7 @@
 package com.alensoft.automator42.model;
 
 import com.alensoft.automator42.model.canvas.Canvas;
-import com.alensoft.automator42.model.node.Decision;
+import com.alensoft.automator42.model.node.Branch;
 import com.alensoft.automator42.model.node.ProcessNode;
 import com.alensoft.automator42.model.node.UserIO;
 import javafx.application.Application;
@@ -17,9 +17,9 @@ public class ComponentsDemo extends Application {
     @Override
     public void start(Stage primaryStage) {
         Canvas canvas = new Canvas(500, 20);
-        BaseNode begin = canvas.getLastNode();
+        BaseNode begin = canvas.getSelectedNode();
         BaseNode loadData = canvas.addMainNode(begin, new ProcessNode("Load Data"));
-        BaseNode decision = canvas.addMainNode(loadData, new Decision("OK?"));
+        BaseNode decision = canvas.addMainNode(loadData, new Branch("OK?"));
         BaseNode io = canvas.addMainNode(decision, new UserIO("User Input"));
 
         BorderPane root = new BorderPane();
@@ -28,15 +28,15 @@ public class ComponentsDemo extends Application {
         Button addProcessBtn = new Button("Добавить процесс");
         addProcessBtn.setOnAction(e -> {
             ProcessNode node = new ProcessNode("New Process");
-            BaseNode lastNode = canvas.addMainNode(canvas.getLastNode(), node);
-            canvas.setLastNode(lastNode);
+            BaseNode lastNode = canvas.addMainNode(canvas.getSelectedNode(), node);
+            canvas.setSelectedNode(lastNode);
         });
 
         Button addDecisionBtn = new Button("Добавить решение");
         addDecisionBtn.setOnAction(e -> {
-            Decision node = new Decision("Decision?");
-            BaseNode lastNode = canvas.addDecisionNode(canvas.getLastNode(), node);
-            canvas.setLastNode(lastNode);
+            Branch node = new Branch("Decision?");
+            BaseNode lastNode = canvas.addBranch(canvas.getSelectedNode(), node);
+            canvas.setSelectedNode(lastNode);
         });
 
 

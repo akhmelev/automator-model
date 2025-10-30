@@ -11,10 +11,10 @@ import javafx.geometry.Point2D;
  */
 public enum ConnectionType {
     // MAIN - прямой поток (bottom → top) использует Arrow
-    MAIN("", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.MAIN),
-    YES("Yes", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.MAIN),
-    NO("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.FROM_MAIN),
-    MERGE("No", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.TO_MAIN);
+    DOWN("", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OK),
+    BRANCH("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.IN),
+    EMPTY("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.IN_EMPTY),
+    MERGE("No", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OUT);
 
     private final String label;
     private final AnchorPoint sourceAnchor;

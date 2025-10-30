@@ -9,12 +9,12 @@ import javafx.scene.text.Font;
 /**
  * Узел принятия решения с метками Yes/No
  */
-public class Decision extends BaseNode {
+public class Branch extends BaseNode {
     private final Polygon diamond = new Polygon();
     private final Label yesLabel = new Label("Yes");
     private final Label noLabel = new Label("No");
 
-    public Decision(String text) {
+    public Branch(String text) {
         super(text);
         
         // Настройка меток

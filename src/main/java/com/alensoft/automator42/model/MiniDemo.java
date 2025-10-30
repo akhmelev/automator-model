@@ -2,7 +2,7 @@ package com.alensoft.automator42.model;
 
 import com.alensoft.automator42.model.canvas.Canvas;
 import com.alensoft.automator42.model.connection.ConnectionManager;
-import com.alensoft.automator42.model.node.Decision;
+import com.alensoft.automator42.model.node.Branch;
 import com.alensoft.automator42.model.node.ProcessNode;
 import com.alensoft.automator42.model.node.UserIO;
 import javafx.application.Application;
@@ -21,7 +21,7 @@ public class MiniDemo extends Application {
         ConnectionManager cm = canvas.getConnectionManager();
 
         // Построение блок-схемы с множественными выходами
-        BaseNode begin = canvas.getLastNode();
+        BaseNode begin = canvas.getSelectedNode();
 
 //        // Основная цепочка - используем addMainNode (создает MAIN соединения с Arrow)
 //        BaseNode loadData = canvas.addMainNode(begin, new ProcessNode("Load Data"));
@@ -63,22 +63,22 @@ public class MiniDemo extends Application {
         Button addProcessBtn = new Button("Add Process");
         addProcessBtn.setOnAction(e -> {
             ProcessNode node = new ProcessNode("New Process");
-            BaseNode lastNode = canvas.addMainNode(canvas.getLastNode(), node);
-            canvas.setLastNode(lastNode);
+            BaseNode lastNode = canvas.addMainNode(canvas.getSelectedNode(), node);
+            canvas.setSelectedNode(lastNode);
         });
 
         Button addDecisionBtn = new Button("Add Decision");
         addDecisionBtn.setOnAction(e -> {
-            Decision node = new Decision("Decision?");
-            BaseNode lastNode = canvas.addDecisionNode(canvas.getLastNode(), node);
-            canvas.setLastNode(lastNode);
+            Branch node = new Branch("Decision?");
+            BaseNode lastNode = canvas.addBranch(canvas.getSelectedNode(), node);
+            canvas.setSelectedNode(lastNode);
         });
 
         Button addIOBtn = new Button("Add I/O");
         addIOBtn.setOnAction(e -> {
             UserIO node = new UserIO("User Input");
-            BaseNode lastNode = canvas.addMainNode(canvas.getLastNode(), node);
-            canvas.setLastNode(lastNode);
+            BaseNode lastNode = canvas.addMainNode(canvas.getSelectedNode(), node);
+            canvas.setSelectedNode(lastNode);
         });
 
         Button clearConnectionsBtn = new Button("Clear Connections");

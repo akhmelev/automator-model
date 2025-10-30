@@ -76,7 +76,7 @@ public class Arrow extends Group {
 
         double x = sx;
         double y = sy;
-
+        direction = direction.update(start, end);
         for (int i = 0; i < direction.dXY.length; i++) {
             double delta = direction.dXY[i++];
             x = Math.abs(delta) <= 1.0001
@@ -101,14 +101,13 @@ public class Arrow extends Group {
 
     private void shortenLine(List<Point2D> path, ArrowType direction) {
         Point2D last = path.get(path.size() - 1);
-        if (direction == ArrowType.FROM_MAIN || direction == ArrowType.MAIN) {
+        if (direction == ArrowType.IN || direction == ArrowType.OK) {
             last = new Point2D(last.getX(), last.getY() - 4);
         } else {
             last = new Point2D(last.getX() + 4, last.getY());
         }
         path.set(path.size() - 1, last);
     }
-
 
 
     private void updateHead(List<Point2D> path) {

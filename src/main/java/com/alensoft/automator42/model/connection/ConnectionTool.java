@@ -21,7 +21,7 @@ public class ConnectionTool {
     private Group tempArrow;
     private ObjectProperty<Point2D> tempStartPoint;
     private ObjectProperty<Point2D> tempEndPoint;
-    private ConnectionType connectionType = ConnectionType.MAIN;
+    private ConnectionType connectionType = ConnectionType.DOWN;
 
     public ConnectionTool(Canvas canvas, ConnectionManager connectionManager) {
         this.canvas = canvas;
@@ -46,7 +46,7 @@ public class ConnectionTool {
 
         e.consume(); // Теперь consume, чтобы не перетаскивать
         sourceNode = (BaseNode) e.getSource();
-        canvas.setLastNode(sourceNode);
+        canvas.setSelectedNode(sourceNode);
         // Определить тип соединения по позиции клика
         connectionType = determineConnectionType(sourceNode, e.getX(), e.getY());
 
@@ -108,16 +108,12 @@ public class ConnectionTool {
         double width = node.getWidth();
         double height = node.getHeight();
 
-        // Левая треть - LEFT/NO
-        if (xClick < width / 3) {
-            return ConnectionType.YES;
-        }
         // Правая треть - RIGHT/YES
         if (xClick > 2 * width / 3) {
-            return ConnectionType.NO;
+            return ConnectionType.BRANCH;
         }
         // Центр - MAIN
-        return ConnectionType.MAIN;
+        return ConnectionType.DOWN;
     }
 
     /**
