@@ -3,9 +3,10 @@ package com.alensoft.automator42.model;
 import com.alensoft.automator42.model.canvas.Canvas;
 import com.alensoft.automator42.model.connection.ConnectionTool;
 import com.alensoft.automator42.model.connection.ConnectionType;
-import com.alensoft.automator42.model.node.Branch;
-import com.alensoft.automator42.model.node.ProcessNode;
-import com.alensoft.automator42.model.node.UserIO;
+import com.alensoft.automator42.model.step.Branch;
+import com.alensoft.automator42.model.step.Process;
+import com.alensoft.automator42.model.step.Step;
+import com.alensoft.automator42.model.step.UserIO;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -27,7 +28,7 @@ public class CompleteDemo extends Application {
     private Canvas canvas;
     private ConnectionTool connectionTool;
     private Label statusLabel;
-    private BaseNode selectedNode;
+    private Step selectedStep;
     private ComboBox<String> insertModeBox;
 
     @Override
@@ -48,48 +49,48 @@ public class CompleteDemo extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        updateStatus("Ready. Click on node to select, then use Insert/Delete buttons");
+        updateStatus("Ready. Click on step to select, then use Insert/Delete buttons");
     }
 
     private void buildDemoFlowchart() {
-        BaseNode begin = canvas.getSelectedNode();
+        Step begin = canvas.getSelectedStep();
 
         // Основная цепочка с Decision (автоматически создаются коннекторы)
-        BaseNode init = canvas.addMainNode(begin, new ProcessNode("Initialize"));
-        BaseNode validation = canvas.addBranch(init, new Branch("Config Valid?"));
+        Step init = canvas.addStep(begin, new Process("Initialize"));
+        Step validation = canvas.addBranch(init, new Branch("Config Valid?"));
 
         // Активировать выделение и ConnectionTool для всех узлов (включая Connector)
         canvas.getChildren().stream()
-                .filter(node -> node instanceof BaseNode)
-                .map(node -> (BaseNode) node)
-                .forEach(this::activateNode);
+                .filter(step -> step instanceof Step)
+                .map(step -> (Step) step)
+                .forEach(this::activateStep);
 
         updateStatus("Demo flowchart created. All branches lead to End. AST is valid.");
     }
 
-    private void activateNode(BaseNode node) {
+    private void activateStep(Step step) {
         // Добавить обработчик клика для выделения
-        node.setOnMouseClicked(e -> {
+        step.setOnMouseClicked(e -> {
             if (!e.isControlDown()) {
-                selectNode(node);
+                selectStep(step);
                 e.consume();
             }
         });
 
         // Активировать ConnectionTool (Ctrl+Drag для связей)
-        connectionTool.activate(node);
+        connectionTool.activate(step);
     }
 
-    private void selectNode(BaseNode node) {
+    private void selectStep(Step step) {
         // Снять выделение с предыдущего
-        if (selectedNode != null) {
-            selectedNode.setStyle("-fx-border-color: transparent; -fx-border-width: 0;");
+        if (selectedStep != null) {
+            selectedStep.setStyle("-fx-border-color: transparent; -fx-border-width: 8;");
         }
 
         // Выделить новый узел
-        selectedNode = node;
-        selectedNode.setStyle("-fx-border-color: #49fc4e; -fx-border-width: 3; -fx-border-radius: 5;");
-        updateStatus("Selected: " + node.getText() + " (" + node.getClass().getSimpleName() + ")");
+        selectedStep = step;
+        selectedStep.setStyle("-fx-border-color: #49fc4e; -fx-border-width: 3; -fx-border-radius: 5;");
+        updateStatus("Selected: " + step.getText() + " (" + step.getClass().getSimpleName() + ")");
     }
 
     private VBox createToolbar() {
@@ -97,7 +98,7 @@ public class CompleteDemo extends Application {
         toolbar.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-width: 0 0 1 0;");
 
         // Панель добавления узлов
-        toolbar.getChildren().add(createAddNodesPanel());
+        toolbar.getChildren().add(createAddStepsPanel());
         toolbar.getChildren().add(new Separator());
 
         // Панель вставки/удаления
@@ -110,10 +111,10 @@ public class CompleteDemo extends Application {
         // Инструкция
         Label instruction = new Label(
                 "💡 Instructions:\n" +
-                "• Click node to select (orange border)\n" +
-                "• Use Insert buttons to add nodes before/after selected\n" +
+                "• Click step to select (orange border)\n" +
+                "• Use Insert buttons to add steps before/after selected\n" +
                 "• Hold Ctrl + Drag to create connections\n" +
-                "• Delete removes node and reconnects neighbors"
+                "• Delete removes step and reconnects neighbors"
         );
         instruction.setStyle("-fx-font-size: 11px; -fx-text-fill: #666;");
         instruction.setPadding(new Insets(5, 10, 5, 10));
@@ -123,19 +124,19 @@ public class CompleteDemo extends Application {
         return toolbar;
     }
 
-    private HBox createAddNodesPanel() {
+    private HBox createAddStepsPanel() {
         HBox panel = new HBox(10);
         panel.setPadding(new Insets(10));
         panel.setAlignment(Pos.CENTER_LEFT);
 
         Button addProcessBtn = new Button("➕ Process");
-        addProcessBtn.setOnAction(e -> addNodeAtEnd(new ProcessNode("New Process")));
+        addProcessBtn.setOnAction(e -> addStepAtEnd(new Process("New Process")));
 
         Button addDecisionBtn = new Button("➕ Decision");
-        addDecisionBtn.setOnAction(e -> addNodeAtEnd(new Branch("Decision?")));
+        addDecisionBtn.setOnAction(e -> addStepAtEnd(new Branch("Decision?")));
 
         Button addIOBtn = new Button("➕ I/O");
-        addIOBtn.setOnAction(e -> addNodeAtEnd(new UserIO("Input/Output")));
+        addIOBtn.setOnAction(e -> addStepAtEnd(new UserIO("Input/Output")));
 
         panel.getChildren().addAll(
                 new Label("Add to end:"),
@@ -159,13 +160,13 @@ public class CompleteDemo extends Application {
         insertModeBox.setPrefWidth(130);
 
         Button insertProcessBtn = new Button("⬇ Insert Process");
-        insertProcessBtn.setOnAction(e -> insertNode(new ProcessNode("Inserted Process")));
+        insertProcessBtn.setOnAction(e -> insertStep(new Process("Inserted Process")));
 
         Button insertDecisionBtn = new Button("⬇ Insert Decision");
-        insertDecisionBtn.setOnAction(e -> insertNode(new Branch("Inserted?")));
+        insertDecisionBtn.setOnAction(e -> insertStep(new Branch("Inserted?")));
 
         Button insertIOBtn = new Button("⬇ Insert I/O");
-        insertIOBtn.setOnAction(e -> insertNode(new UserIO("Inserted I/O")));
+        insertIOBtn.setOnAction(e -> insertStep(new UserIO("Inserted I/O")));
 
         Button deleteBtn = new Button("🗑 Delete Selected");
         deleteBtn.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #c62828;");
@@ -197,22 +198,17 @@ public class CompleteDemo extends Application {
             updateStatus("Connection mode: " + connectionTypeBox.getValue());
         });
 
-        Button clearConnectionsBtn = new Button("🗑 Clear All Connections");
-        clearConnectionsBtn.setOnAction(e -> {
-            canvas.clearConnections();
-            updateStatus("All connections cleared");
-        });
+
 
         Button validateBtn = new Button("✓ Validate AST");
         validateBtn.setOnAction(e -> {
             boolean valid = canvas.validateAST();
-            updateStatus("AST validation: " + (valid ? "✓ Valid" : "✗ Invalid - disconnected nodes exist"));
+            updateStatus("AST validation: " + (valid ? "✓ Valid" : "✗ Invalid - disconnected steps exist"));
         });
 
         panel.getChildren().addAll(
                 new Label("Connection type:"),
                 connectionTypeBox,
-                clearConnectionsBtn,
                 validateBtn
         );
 
@@ -232,71 +228,71 @@ public class CompleteDemo extends Application {
 
     // ============= ОПЕРАЦИИ С УЗЛАМИ =============
 
-    private void addNodeAtEnd(BaseNode node) {
-        BaseNode lastNode = canvas.getSelectedNode();
-        if (lastNode == null) {
-            updateStatus("Error: No last node found");
+    private void addStepAtEnd(Step step) {
+        Step lastStep = canvas.getSelectedStep();
+        if (lastStep == null) {
+            updateStatus("Error: No last step found");
             return;
         }
 
-        BaseNode added;
-        if (node instanceof Branch) {
-            added = canvas.addBranch(lastNode, node);
+        Step added;
+        if (step instanceof Branch) {
+            added = canvas.addBranch(lastStep, step);
         } else {
-            added = canvas.addMainNode(lastNode, node);
+            added = canvas.addStep(lastStep, step);
         }
 
-        canvas.setSelectedNode(added);
-        activateNode(added);
-        updateStatus("Added " + node.getClass().getSimpleName() + " at end");
+        canvas.setSelectedStep(added);
+        activateStep(added);
+        updateStatus("Added " + step.getClass().getSimpleName() + " at end");
     }
 
-    private void insertNode(BaseNode node) {
-        if (selectedNode == null) {
-            updateStatus("Error: No node selected. Click a node first.");
+    private void insertStep(Step step) {
+        if (selectedStep == null) {
+            updateStatus("Error: No step selected. Click a step first.");
             return;
         }
 
         try {
             String mode = insertModeBox.getValue();
-            BaseNode inserted = null;
+            Step inserted = null;
 
             switch (mode) {
                 case "After (Main)":
-                    if (node instanceof Branch) {
-                        inserted = canvas.addBranch(selectedNode, node);
+                    if (step instanceof Branch) {
+                        inserted = canvas.addBranch(selectedStep, step);
                     } else {
-                        inserted = canvas.addMainNode(selectedNode, node);
+                        inserted = canvas.addStep(selectedStep, step);
                     }
                     break;
 
                 case "After (NO)":
-                    if (!(selectedNode instanceof Branch)) {
-                        updateStatus("Error: Selected node must be Decision for NO branch");
+                    if (!(selectedStep instanceof Branch)) {
+                        updateStatus("Error: Selected step must be Decision for NO branch");
                         return;
                     }
-                    inserted = canvas.insertToBranch(selectedNode, node);
+                    inserted = canvas.insertInBranch(selectedStep, step);
                     break;
 
                 case "Before":
                     // Найти предшественника выбранного узла
-                    BaseNode predecessor = findPredecessor(selectedNode);
+                    Step predecessor = findPredecessor(selectedStep);
                     if (predecessor == null) {
-                        updateStatus("Error: Cannot insert before root node");
+                        updateStatus("Error: Cannot insert before root step");
                         return;
                     }
-                    if (node instanceof Branch) {
-                        inserted = canvas.addBranch(predecessor, node);
+                    if (step instanceof Branch) {
+                        inserted = canvas.addBranch(predecessor, step);
                     } else {
-                        inserted = canvas.addMainNode(predecessor, node);
+                        inserted = canvas.addStep(predecessor, step);
                     }
                     break;
             }
 
             if (inserted != null) {
-                activateNode(inserted);
-                selectNode(inserted);
-                updateStatus("Inserted " + node.getClass().getSimpleName() + " " + mode);
+                activateStep(inserted);
+                selectStep(inserted);
+                updateStatus("Inserted " + step.getClass().getSimpleName() + " " + mode);
             }
 
         } catch (Exception e) {
@@ -305,26 +301,25 @@ public class CompleteDemo extends Application {
     }
 
     private void deleteSelected() {
-        if (selectedNode == null) {
-            updateStatus("Error: No node selected");
+        if (selectedStep == null) {
+            updateStatus("Error: No step selected");
             return;
         }
 
-        String nodeName = selectedNode.getText();
-        canvas.removeNode(selectedNode);
-        selectedNode = null;
+        String stepName = selectedStep.getText();
+        canvas.removeStep(selectedStep);
+        selectedStep = null;
 
-        updateStatus("Deleted: " + nodeName);
+        updateStatus("Deleted: " + stepName);
     }
 
-    private BaseNode findPredecessor(BaseNode node) {
+    private Step findPredecessor(Step step) {
         return canvas.getChildren().stream()
-                .filter(n -> n instanceof BaseNode)
-                .map(n -> (BaseNode) n)
-                .filter(n -> canvas.getConnectionManager()
-                        .getOutgoingConnections(n)
+                .filter(n -> n instanceof Step)
+                .map(n -> (Step) n)
+                .filter(n -> n.out()
                         .stream()
-                        .anyMatch(conn -> conn.getTarget() == node))
+                        .anyMatch(conn -> conn.getTarget() == step))
                 .findFirst()
                 .orElse(null);
     }

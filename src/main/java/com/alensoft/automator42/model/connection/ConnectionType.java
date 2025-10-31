@@ -1,6 +1,6 @@
 package com.alensoft.automator42.model.connection;
 
-import com.alensoft.automator42.model.BaseNode;
+import com.alensoft.automator42.model.step.Step;
 import com.alensoft.automator42.model.line.ArrowType;
 import javafx.beans.property.ObjectProperty;
 import javafx.geometry.Point2D;
@@ -37,12 +37,12 @@ public enum ConnectionType {
         return label;
     }
 
-    public ObjectProperty<Point2D> getSourcePoint(BaseNode node) {
-        return sourceAnchor.getPoint(node);
+    public ObjectProperty<Point2D> getSourcePoint(Step step) {
+        return sourceAnchor.getPoint(step);
     }
 
-    public ObjectProperty<Point2D> getTargetPoint(BaseNode node) {
-        return targetAnchor.getPoint(node);
+    public ObjectProperty<Point2D> getTargetPoint(Step step) {
+        return targetAnchor.getPoint(step);
     }
 
     /**
@@ -51,29 +51,29 @@ public enum ConnectionType {
     public enum AnchorPoint {
         TOP {
             @Override
-            public ObjectProperty<Point2D> getPoint(BaseNode node) {
-                return node.getTop();
+            public ObjectProperty<Point2D> getPoint(Step step) {
+                return step.getTop();
             }
         },
         BOTTOM {
             @Override
-            public ObjectProperty<Point2D> getPoint(BaseNode node) {
-                return node.getBottom();
+            public ObjectProperty<Point2D> getPoint(Step step) {
+                return step.getBottom();
             }
         },
         LEFT {
             @Override
-            public ObjectProperty<Point2D> getPoint(BaseNode node) {
-                return node.getLeft();
+            public ObjectProperty<Point2D> getPoint(Step step) {
+                return step.getLeft();
             }
         },
         RIGHT {
             @Override
-            public ObjectProperty<Point2D> getPoint(BaseNode node) {
-                return node.getRight();
+            public ObjectProperty<Point2D> getPoint(Step step) {
+                return step.getRight();
             }
         };
 
-        public abstract ObjectProperty<Point2D> getPoint(BaseNode node);
+        public abstract ObjectProperty<Point2D> getPoint(Step step);
     }
 }

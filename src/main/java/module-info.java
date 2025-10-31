@@ -10,6 +10,7 @@ module module_name {
 
     opens com.alensoft.automator42.model to javafx.graphics;
     opens com.alensoft.automator42.model.line to javafx.graphics;
-    opens com.alensoft.automator42.model.node to javafx.graphics;
+    opens com.alensoft.automator42.model.step to javafx.graphics;
     opens com.alensoft.automator42.model.connection to javafx.graphics;
+    exports com.alensoft.automator42.model.step;
 }

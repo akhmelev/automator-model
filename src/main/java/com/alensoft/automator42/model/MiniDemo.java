@@ -2,9 +2,10 @@ package com.alensoft.automator42.model;
 
 import com.alensoft.automator42.model.canvas.Canvas;
 import com.alensoft.automator42.model.connection.ConnectionManager;
-import com.alensoft.automator42.model.node.Branch;
-import com.alensoft.automator42.model.node.ProcessNode;
-import com.alensoft.automator42.model.node.UserIO;
+import com.alensoft.automator42.model.step.Branch;
+import com.alensoft.automator42.model.step.Process;
+import com.alensoft.automator42.model.step.Step;
+import com.alensoft.automator42.model.step.UserIO;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -21,14 +22,14 @@ public class MiniDemo extends Application {
         ConnectionManager cm = canvas.getConnectionManager();
 
         // Построение блок-схемы с множественными выходами
-        BaseNode begin = canvas.getSelectedNode();
+        Step begin = canvas.getSelectedStep();
 
-//        // Основная цепочка - используем addMainNode (создает MAIN соединения с Arrow)
-//        BaseNode loadData = canvas.addMainNode(begin, new ProcessNode("Load Data"));
-//        BaseNode decision = canvas.addMainNode(loadData, new Decision("Data Valid?"));
+//        // Основная цепочка - используем addMainStep (создает MAIN соединения с Arrow)
+//        BaseStep loadData = canvas.addMainStep(begin, new ProcessStep("Load Data"));
+//        BaseStep decision = canvas.addMainStep(loadData, new Decision("Data Valid?"));
 //
 //        // Создание веток для Decision - используем YES/NO (ArrowIf)
-//        BaseNode processData = canvas.addMainNode(decision,new ProcessNode("Process Data"));
+//        BaseStep processData = canvas.addMainStep(decision,new ProcessStep("Process Data"));
 //
 //        UserIO errorHandler = new UserIO("Show Error");
 //        errorHandler.relocate(decision.getLayoutX() - 200, decision.getLayoutY() + 150);
@@ -38,7 +39,7 @@ public class MiniDemo extends Application {
 //        cm.createConnection(decision, errorHandler, ConnectionType.NOK);
 //
 //        // Продолжение основной ветки
-//        BaseNode saveResult = canvas.addMainNode(processData,new ProcessNode("Save Result"));
+//        BaseStep saveResult = canvas.addMainStep(processData,new ProcessStep("Save Result"));
 //        saveResult.relocate(decision.getLayoutX(), decision.getLayoutY() + 300);
 //
 //        // Слияние веток - используем MAIN (Arrow) так как идет вертикально вниз
@@ -62,23 +63,23 @@ public class MiniDemo extends Application {
     private HBox createToolbar(Canvas canvas) {
         Button addProcessBtn = new Button("Add Process");
         addProcessBtn.setOnAction(e -> {
-            ProcessNode node = new ProcessNode("New Process");
-            BaseNode lastNode = canvas.addMainNode(canvas.getSelectedNode(), node);
-            canvas.setSelectedNode(lastNode);
+            Process step = new Process("New Process");
+            Step lastStep = canvas.addStep(canvas.getSelectedStep(), step);
+            canvas.setSelectedStep(lastStep);
         });
 
         Button addDecisionBtn = new Button("Add Decision");
         addDecisionBtn.setOnAction(e -> {
-            Branch node = new Branch("Decision?");
-            BaseNode lastNode = canvas.addBranch(canvas.getSelectedNode(), node);
-            canvas.setSelectedNode(lastNode);
+            Branch step = new Branch("Decision?");
+            Step lastStep = canvas.addBranch(canvas.getSelectedStep(), step);
+            canvas.setSelectedStep(lastStep);
         });
 
         Button addIOBtn = new Button("Add I/O");
         addIOBtn.setOnAction(e -> {
-            UserIO node = new UserIO("User Input");
-            BaseNode lastNode = canvas.addMainNode(canvas.getSelectedNode(), node);
-            canvas.setSelectedNode(lastNode);
+            UserIO step = new UserIO("User Input");
+            Step lastStep = canvas.addStep(canvas.getSelectedStep(), step);
+            canvas.setSelectedStep(lastStep);
         });
 
         Button clearConnectionsBtn = new Button("Clear Connections");

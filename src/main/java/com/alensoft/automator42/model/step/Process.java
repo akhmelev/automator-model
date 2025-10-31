@@ -1,15 +1,14 @@
-package com.alensoft.automator42.model.node;
+package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.BaseNode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class ProcessNode extends BaseNode {
+public class Process extends Step {
     private final Rectangle rect;
 
-    public ProcessNode(String text) {
+    public Process(String text) {
         super(text);
-        rect = new Rectangle(BaseNode.WIDTH, BaseNode.HEIGHT);
+        rect = new Rectangle(Step.WIDTH, Step.HEIGHT);
         rect.setArcWidth(6);
         rect.setArcHeight(6);
         postConstruct(rect, Color.DARKGREEN, Color.web("#ffffff"), 2, WIDTH, HEIGHT);

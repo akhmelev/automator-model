@@ -1,6 +1,6 @@
 package com.alensoft.automator42.model.connection;
 
-import com.alensoft.automator42.model.BaseNode;
+import com.alensoft.automator42.model.step.Step;
 import com.alensoft.automator42.model.canvas.Canvas;
 import com.alensoft.automator42.model.line.Arrow;
 import javafx.beans.property.ObjectProperty;
@@ -17,7 +17,7 @@ import javafx.scene.input.MouseEvent;
 public class ConnectionTool {
     private final Canvas canvas;
     private final ConnectionManager connectionManager;
-    private BaseNode sourceNode;
+    private Step sourceStep;
     private Group tempArrow;
     private ObjectProperty<Point2D> tempStartPoint;
     private ObjectProperty<Point2D> tempEndPoint;
@@ -31,27 +31,27 @@ public class ConnectionTool {
     /**
      * Активировать инструмент на узле
      */
-    public void activate(BaseNode node) {
+    public void activate(Step step) {
         // Добавляем обработчики через addEventFilter чтобы не блокировать drag
-        node.addEventFilter(MouseEvent.MOUSE_PRESSED, this::onNodePressed);
-        node.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::onNodeDragged);
-        node.addEventFilter(MouseEvent.MOUSE_RELEASED, this::onNodeReleased);
+        step.addEventFilter(MouseEvent.MOUSE_PRESSED, this::onStepPressed);
+        step.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::onStepDragged);
+        step.addEventFilter(MouseEvent.MOUSE_RELEASED, this::onStepReleased);
     }
 
-    private void onNodePressed(MouseEvent e) {
+    private void onStepPressed(MouseEvent e) {
         // Только если зажат Ctrl
         if (e.getButton() != MouseButton.PRIMARY || !e.isControlDown()) {
             return; // Не consume, пусть обработает drag
         }
 
         e.consume(); // Теперь consume, чтобы не перетаскивать
-        sourceNode = (BaseNode) e.getSource();
-        canvas.setSelectedNode(sourceNode);
+        sourceStep = (Step) e.getSource();
+        canvas.setSelectedStep(sourceStep);
         // Определить тип соединения по позиции клика
-        connectionType = determineConnectionType(sourceNode, e.getX(), e.getY());
+        connectionType = determineConnectionType(sourceStep, e.getX(), e.getY());
 
         // Получить начальную точку от узла
-        tempStartPoint = new SimpleObjectProperty<>(connectionType.getSourcePoint(sourceNode).get());
+        tempStartPoint = new SimpleObjectProperty<>(connectionType.getSourcePoint(sourceStep).get());
 
         // Конечная точка следует за курсором
         tempEndPoint = new SimpleObjectProperty<>(new Point2D(e.getSceneX(), e.getSceneY()));
@@ -65,7 +65,7 @@ public class ConnectionTool {
         canvas.getChildren().add(tempArrow);
     }
 
-    private void onNodeDragged(MouseEvent e) {
+    private void onStepDragged(MouseEvent e) {
         if (tempArrow == null || !e.isControlDown()) {
             return; // Не consume, пусть обработает drag
         }
@@ -76,7 +76,7 @@ public class ConnectionTool {
         tempEndPoint.set(new Point2D(e.getSceneX(), e.getSceneY()));
     }
 
-    private void onNodeReleased(MouseEvent e) {
+    private void onStepReleased(MouseEvent e) {
         if (tempArrow == null) {
             return;
         }
@@ -85,17 +85,17 @@ public class ConnectionTool {
         canvas.getChildren().remove(tempArrow);
 
         // Найти целевой узел
-        BaseNode targetNode = findNodeAt(e.getSceneX(), e.getSceneY());
+        Step targetStep = findStepAt(e.getSceneX(), e.getSceneY());
 
-        if (targetNode != null && targetNode != sourceNode) {
+        if (targetStep != null && targetStep != sourceStep) {
             try {
-                connectionManager.createConnection(sourceNode, targetNode, connectionType);
+                connectionManager.createConnection(sourceStep, targetStep, connectionType);
             } catch (IllegalArgumentException ex) {
                 System.err.println("Cannot create connection: " + ex.getMessage());
             }
         }
 
-        sourceNode = null;
+        sourceStep = null;
         tempArrow = null;
         tempStartPoint = null;
         tempEndPoint = null;
@@ -104,9 +104,9 @@ public class ConnectionTool {
     /**
      * Определить тип соединения по позиции клика на узле
      */
-    private ConnectionType determineConnectionType(BaseNode node, double xClick, double yClick) {
-        double width = node.getWidth();
-        double height = node.getHeight();
+    private ConnectionType determineConnectionType(Step step, double xClick, double yClick) {
+        double width = step.getWidth();
+        double height = step.getHeight();
 
         // Правая треть - RIGHT/YES
         if (xClick > 2 * width / 3) {
@@ -119,11 +119,11 @@ public class ConnectionTool {
     /**
      * Найти узел в указанных координатах
      */
-    private BaseNode findNodeAt(double sceneX, double sceneY) {
+    private Step findStepAt(double sceneX, double sceneY) {
         return canvas.getChildren().stream()
-                .filter(node -> node instanceof BaseNode)
-                .map(node -> (BaseNode) node)
-                .filter(node -> node.getBoundsInParent().contains(sceneX, sceneY))
+                .filter(step -> step instanceof Step)
+                .map(step -> (Step) step)
+                .filter(step -> step.getBoundsInParent().contains(sceneX, sceneY))
                 .findFirst()
                 .orElse(null);
     }

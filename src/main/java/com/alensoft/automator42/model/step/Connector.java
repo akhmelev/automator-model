@@ -1,10 +1,9 @@
-package com.alensoft.automator42.model.node;
+package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.BaseNode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class Connector extends BaseNode {
+public class Connector extends Step {
     private final Circle circle;
 
     public Connector() {

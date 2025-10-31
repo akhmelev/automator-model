@@ -1,10 +1,9 @@
-package com.alensoft.automator42.model.node;
+package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.BaseNode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
-public class UserIO extends BaseNode {
+public class UserIO extends Step {
     private final Polygon para = new Polygon();
 
     public UserIO(String text) {

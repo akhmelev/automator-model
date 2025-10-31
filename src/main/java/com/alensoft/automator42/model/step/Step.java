@@ -1,5 +1,6 @@
-package com.alensoft.automator42.model;
+package com.alensoft.automator42.model.step;
 
+import com.alensoft.automator42.model.connection.Connection;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.ObjectProperty;
@@ -15,9 +16,11 @@ import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
-public abstract class BaseNode extends Pane {
+public abstract class Step extends Pane {
     public static final int WIDTH = 128;
     public static final int HEIGHT = 64;
     public static final int STEP = 32;
@@ -30,7 +33,10 @@ public abstract class BaseNode extends Pane {
     private final ObjectProperty<Point2D> right = new SimpleObjectProperty<>();
     private final ObjectProperty<Point2D> bottom = new SimpleObjectProperty<>();
 
-    public BaseNode(String text) {
+    private final List<Connection> in=new ArrayList<>();
+    private final List<Connection> out=new ArrayList<>();
+
+    public Step(String text) {
         label.setText(text);
         label.setFont(Font.font(14));
         label.setWrapText(true);
@@ -99,6 +105,14 @@ public abstract class BaseNode extends Pane {
 
     public ObjectProperty<Point2D> getRight() {
         return right;
+    }
+
+    public List<Connection> in() {
+        return in;
+    }
+
+    public List<Connection> out() {
+        return out;
     }
 
     public String getText() {

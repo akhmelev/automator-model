@@ -1,9 +1,10 @@
 package com.alensoft.automator42.model;
 
 import com.alensoft.automator42.model.canvas.Canvas;
-import com.alensoft.automator42.model.node.Branch;
-import com.alensoft.automator42.model.node.ProcessNode;
-import com.alensoft.automator42.model.node.UserIO;
+import com.alensoft.automator42.model.step.Branch;
+import com.alensoft.automator42.model.step.Process;
+import com.alensoft.automator42.model.step.Step;
+import com.alensoft.automator42.model.step.UserIO;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -17,26 +18,26 @@ public class ComponentsDemo extends Application {
     @Override
     public void start(Stage primaryStage) {
         Canvas canvas = new Canvas(500, 20);
-        BaseNode begin = canvas.getSelectedNode();
-        BaseNode loadData = canvas.addMainNode(begin, new ProcessNode("Load Data"));
-        BaseNode decision = canvas.addMainNode(loadData, new Branch("OK?"));
-        BaseNode io = canvas.addMainNode(decision, new UserIO("User Input"));
+        Step begin = canvas.getSelectedStep();
+        Step loadData = canvas.addStep(begin, new Process("Load Data"));
+        Step decision = canvas.addStep(loadData, new Branch("OK?"));
+        Step io = canvas.addStep(decision, new UserIO("User Input"));
 
         BorderPane root = new BorderPane();
         root.setCenter(canvas);
 
         Button addProcessBtn = new Button("Добавить процесс");
         addProcessBtn.setOnAction(e -> {
-            ProcessNode node = new ProcessNode("New Process");
-            BaseNode lastNode = canvas.addMainNode(canvas.getSelectedNode(), node);
-            canvas.setSelectedNode(lastNode);
+            Process step = new Process("New Process");
+            Step lastStep = canvas.addStep(canvas.getSelectedStep(), step);
+            canvas.setSelectedStep(lastStep);
         });
 
         Button addDecisionBtn = new Button("Добавить решение");
         addDecisionBtn.setOnAction(e -> {
-            Branch node = new Branch("Decision?");
-            BaseNode lastNode = canvas.addBranch(canvas.getSelectedNode(), node);
-            canvas.setSelectedNode(lastNode);
+            Branch step = new Branch("Decision?");
+            Step lastStep = canvas.addBranch(canvas.getSelectedStep(), step);
+            canvas.setSelectedStep(lastStep);
         });
 
 

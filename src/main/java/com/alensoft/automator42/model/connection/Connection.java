@@ -1,6 +1,6 @@
 package com.alensoft.automator42.model.connection;
 
-import com.alensoft.automator42.model.BaseNode;
+import com.alensoft.automator42.model.step.Step;
 import javafx.scene.Group;
 
 /**
@@ -8,14 +8,14 @@ import javafx.scene.Group;
  * Отделяет логику связей от узлов (SRP).
  */
 public class Connection {
-    private final BaseNode source;
-    private final BaseNode target;
+    private final Step source;
+    private final Step target;
     private final ConnectionType type;
     private final Group arrow;
 
-    public Connection(BaseNode source, BaseNode target, ConnectionType type, Group arrow) {
+    public Connection(Step source, Step target, ConnectionType type, Group arrow) {
         if (source == null || target == null) {
-            throw new IllegalArgumentException("Source and target nodes cannot be null");
+            throw new IllegalArgumentException("Source and target steps cannot be null");
         }
         this.source = source;
         this.target = target;
@@ -23,11 +23,11 @@ public class Connection {
         this.arrow = arrow;
     }
 
-    public BaseNode getSource() {
+    public Step getSource() {
         return source;
     }
 
-    public BaseNode getTarget() {
+    public Step getTarget() {
         return target;
     }
 

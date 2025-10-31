@@ -1,15 +1,14 @@
-package com.alensoft.automator42.model.node;
+package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.BaseNode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 
-public class End extends BaseNode {
+public class End extends Step {
     private final Ellipse ellipse;
 
     public End(String text) {
         super(text);
-        ellipse = new Ellipse(BaseNode.WIDTH, BaseNode.HEIGHT);
+        ellipse = new Ellipse(Step.WIDTH, Step.HEIGHT);
         postConstruct(ellipse, Color.DARKBLUE, Color.web("#fffafa"), 2, WIDTH, HEIGHT);
     }
 

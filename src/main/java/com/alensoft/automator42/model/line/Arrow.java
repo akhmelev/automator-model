@@ -16,9 +16,9 @@ public class Arrow extends Group {
 
     private final Polyline polyline = new Polyline();
     private final Polygon head = new Polygon();
-    private static final double V_SHORTEN = 3; // Для укорачивания перед наконечником
-    private static final double H_OFFSET = 10.0; // Отступ от верха
-    private static final double LINE_SHORTEN_AMOUNT = 2.0; // Насколько укоротить линию
+    private static final double V_SHORTEN = 3;
+    public static final double H_SHORTEN = 5;
+    public static final double H_OFFSET = 12.0;
 
     private final ObjectProperty<Point2D> startProperty;
     private final ObjectProperty<Point2D> endProperty;
@@ -78,10 +78,16 @@ public class Arrow extends Group {
         double y = sy;
         direction = direction.update(start, end);
         for (int i = 0; i < direction.dXY.length; i++) {
-            double delta = direction.dXY[i++];
+            double delta = direction.dXY[i];
             x = Math.abs(delta) <= 1.0001
                     ? x + (ex - x) * delta
                     : x + delta;
+            //это последняя точка и есть изменение по X
+            if (i == direction.dXY.length - 2 && direction.dXY[i] != 0) {
+                x = (sx > ex) ? x + H_SHORTEN : x - H_SHORTEN;
+            }
+
+            i++;
             delta = direction.dXY[i];
             y = Math.abs(delta) <= 1.0001
                     ? y + (ey - y) * delta
@@ -94,6 +100,7 @@ public class Arrow extends Group {
             if (i == direction.dXY.length - 1 && direction.dXY[i] != 0) {
                 y = (sy > ey) ? y + V_SHORTEN : y - V_SHORTEN;
             }
+
             path.add(new Point2D(x, y));
         }
         return path;

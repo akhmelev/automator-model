@@ -1,6 +1,5 @@
-package com.alensoft.automator42.model.node;
+package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.BaseNode;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -9,7 +8,7 @@ import javafx.scene.text.Font;
 /**
  * Узел принятия решения с метками Yes/No
  */
-public class Branch extends BaseNode {
+public class Branch extends Step {
     private final Polygon diamond = new Polygon();
     private final Label yesLabel = new Label("Yes");
     private final Label noLabel = new Label("No");
@@ -18,10 +17,10 @@ public class Branch extends BaseNode {
         super(text);
         
         // Настройка меток
-        yesLabel.setFont(Font.font(10));
-        yesLabel.setTextFill(Color.DARKORANGE);
-        noLabel.setFont(Font.font(10));
-        noLabel.setTextFill(Color.DARKORANGE);
+        yesLabel.setFont(Font.font(12));
+        yesLabel.setTextFill(Color.BLUE);
+        noLabel.setFont(Font.font(12));
+        noLabel.setTextFill(Color.DARKRED);
         
         getChildren().addAll(yesLabel, noLabel);
         
@@ -33,7 +32,6 @@ public class Branch extends BaseNode {
         double w = getPrefWidth();
         double h = getPrefHeight();
         
-        // Форма ромба (шестиугольник для ДРАКОН)
         diamond.getPoints().setAll(
                 3 * w / 4, 0.0,      // Верхняя правая
                 w, h / 2,            // Правая
@@ -47,10 +45,10 @@ public class Branch extends BaseNode {
         layoutLabelCentered();
         
         // Позиционирование меток Yes/No
-        yesLabel.setLayoutX(w - 30);
-        yesLabel.setLayoutY(h / 2 - 10);
+        yesLabel.setLayoutX(w /2 - 10);
+        yesLabel.setLayoutY(h - 14);
         
-        noLabel.setLayoutX(5);
+        noLabel.setLayoutX( w-18);
         noLabel.setLayoutY(h / 2 - 10);
     }
 }
