@@ -1,8 +1,8 @@
 package com.alensoft.automator42.model;
 
 import com.alensoft.automator42.model.canvas.Canvas;
-import com.alensoft.automator42.model.connection.ConnectionTool;
-import com.alensoft.automator42.model.connection.ConnectionType;
+import com.alensoft.automator42.model.connection.ConTool;
+import com.alensoft.automator42.model.connection.ConType;
 import com.alensoft.automator42.model.step.Branch;
 import com.alensoft.automator42.model.step.Process;
 import com.alensoft.automator42.model.step.Step;
@@ -26,15 +26,14 @@ import javafx.stage.Stage;
 public class CompleteDemo extends Application {
 
     private Canvas canvas;
-    private ConnectionTool connectionTool;
+    private ConTool conTool;
     private Label statusLabel;
     private Step selectedStep;
-    private ComboBox<String> insertModeBox;
 
     @Override
     public void start(Stage primaryStage) {
         canvas = new Canvas(400, 25);
-        connectionTool = new ConnectionTool(canvas, canvas.getConnectionManager());
+        conTool = new ConTool(canvas, canvas.getConManager());
 
         // Построение демо-схемы
 
@@ -57,9 +56,9 @@ public class CompleteDemo extends Application {
 
         // Основная цепочка с Decision (автоматически создаются коннекторы)
         Step init = canvas.addStep(begin, new Process("Initialize"));
-        Step validation = canvas.addBranch(init, new Branch("Config Valid?"));
+        Step validation = canvas.addStep(init, new Branch("Config Valid?"));
 
-        // Активировать выделение и ConnectionTool для всех узлов (включая Connector)
+        // Активировать выделение и ConTool для всех узлов (включая Connector)
         canvas.getChildren().stream()
                 .filter(step -> step instanceof Step)
                 .map(step -> (Step) step)
@@ -77,8 +76,8 @@ public class CompleteDemo extends Application {
             }
         });
 
-        // Активировать ConnectionTool (Ctrl+Drag для связей)
-        connectionTool.activate(step);
+        // Активировать ConTool (Ctrl+Drag для связей)
+        conTool.activate(step);
     }
 
     private void selectStep(Step step) {
@@ -106,14 +105,14 @@ public class CompleteDemo extends Application {
         toolbar.getChildren().add(new Separator());
 
         // Панель управления связями
-        toolbar.getChildren().add(createConnectionPanel());
+        toolbar.getChildren().add(createConPanel());
 
         // Инструкция
         Label instruction = new Label(
                 "💡 Instructions:\n" +
                 "• Click step to select (orange border)\n" +
                 "• Use Insert buttons to add steps before/after selected\n" +
-                "• Hold Ctrl + Drag to create connections\n" +
+                "• Hold Ctrl + Drag to create cons\n" +
                 "• Delete removes step and reconnects neighbors"
         );
         instruction.setStyle("-fx-font-size: 11px; -fx-text-fill: #666;");
@@ -130,13 +129,13 @@ public class CompleteDemo extends Application {
         panel.setAlignment(Pos.CENTER_LEFT);
 
         Button addProcessBtn = new Button("➕ Process");
-        addProcessBtn.setOnAction(e -> addStepAtEnd(new Process("New Process")));
+        addProcessBtn.setOnAction(e -> insertStep(new Process("New Process"),false));
 
         Button addDecisionBtn = new Button("➕ Decision");
-        addDecisionBtn.setOnAction(e -> addStepAtEnd(new Branch("Decision?")));
+        addDecisionBtn.setOnAction(e -> insertStep(new Branch("Decision?"),false));
 
         Button addIOBtn = new Button("➕ I/O");
-        addIOBtn.setOnAction(e -> addStepAtEnd(new UserIO("Input/Output")));
+        addIOBtn.setOnAction(e -> insertStep(new UserIO("Input/Output"),false));
 
         panel.getChildren().addAll(
                 new Label("Add to end:"),
@@ -153,20 +152,14 @@ public class CompleteDemo extends Application {
         panel.setPadding(new Insets(10));
         panel.setAlignment(Pos.CENTER_LEFT);
 
-        // Выбор режима вставки
-        insertModeBox = new ComboBox<>();
-        insertModeBox.getItems().addAll("After (Main)", "After (YES)", "After (NO)", "Before");
-        insertModeBox.setValue("After (Main)");
-        insertModeBox.setPrefWidth(130);
-
         Button insertProcessBtn = new Button("⬇ Insert Process");
-        insertProcessBtn.setOnAction(e -> insertStep(new Process("Inserted Process")));
+        insertProcessBtn.setOnAction(e -> insertStep(new Process("Inserted Process"),true));
 
         Button insertDecisionBtn = new Button("⬇ Insert Decision");
-        insertDecisionBtn.setOnAction(e -> insertStep(new Branch("Inserted?")));
+        insertDecisionBtn.setOnAction(e -> insertStep(new Branch("Inserted?"),true));
 
         Button insertIOBtn = new Button("⬇ Insert I/O");
-        insertIOBtn.setOnAction(e -> insertStep(new UserIO("Inserted I/O")));
+        insertIOBtn.setOnAction(e -> insertStep(new UserIO("Inserted I/O"),true));
 
         Button deleteBtn = new Button("🗑 Delete Selected");
         deleteBtn.setStyle("-fx-background-color: #ffebee; -fx-text-fill: #c62828;");
@@ -174,7 +167,6 @@ public class CompleteDemo extends Application {
 
         panel.getChildren().addAll(
                 new Label("Insert mode:"),
-                insertModeBox,
                 insertProcessBtn,
                 insertDecisionBtn,
                 insertIOBtn,
@@ -185,19 +177,18 @@ public class CompleteDemo extends Application {
         return panel;
     }
 
-    private HBox createConnectionPanel() {
+    private HBox createConPanel() {
         HBox panel = new HBox(10);
         panel.setPadding(new Insets(10));
         panel.setAlignment(Pos.CENTER_LEFT);
 
-        ComboBox<ConnectionType> connectionTypeBox = new ComboBox<>();
-        connectionTypeBox.getItems().addAll(ConnectionType.values());
-        connectionTypeBox.setValue(ConnectionType.DOWN);
-        connectionTypeBox.setOnAction(e -> {
-            connectionTool.setDefaultConnectionType(connectionTypeBox.getValue());
-            updateStatus("Connection mode: " + connectionTypeBox.getValue());
+        ComboBox<ConType> conTypeBox = new ComboBox<>();
+        conTypeBox.getItems().addAll(ConType.values());
+        conTypeBox.setValue(ConType.DOWN);
+        conTypeBox.setOnAction(e -> {
+            conTool.setDefaultConType(conTypeBox.getValue());
+            updateStatus("Con mode: " + conTypeBox.getValue());
         });
-
 
 
         Button validateBtn = new Button("✓ Validate AST");
@@ -207,8 +198,8 @@ public class CompleteDemo extends Application {
         });
 
         panel.getChildren().addAll(
-                new Label("Connection type:"),
-                connectionTypeBox,
+                new Label("Con type:"),
+                conTypeBox,
                 validateBtn
         );
 
@@ -228,71 +219,24 @@ public class CompleteDemo extends Application {
 
     // ============= ОПЕРАЦИИ С УЗЛАМИ =============
 
-    private void addStepAtEnd(Step step) {
-        Step lastStep = canvas.getSelectedStep();
-        if (lastStep == null) {
-            updateStatus("Error: No last step found");
-            return;
-        }
-
-        Step added;
-        if (step instanceof Branch) {
-            added = canvas.addBranch(lastStep, step);
-        } else {
-            added = canvas.addStep(lastStep, step);
-        }
-
-        canvas.setSelectedStep(added);
-        activateStep(added);
-        updateStatus("Added " + step.getClass().getSimpleName() + " at end");
-    }
-
-    private void insertStep(Step step) {
+    private void insertStep(Step step, boolean branch) {
         if (selectedStep == null) {
             updateStatus("Error: No step selected. Click a step first.");
             return;
         }
 
         try {
-            String mode = insertModeBox.getValue();
             Step inserted = null;
-
-            switch (mode) {
-                case "After (Main)":
-                    if (step instanceof Branch) {
-                        inserted = canvas.addBranch(selectedStep, step);
-                    } else {
-                        inserted = canvas.addStep(selectedStep, step);
-                    }
-                    break;
-
-                case "After (NO)":
-                    if (!(selectedStep instanceof Branch)) {
-                        updateStatus("Error: Selected step must be Decision for NO branch");
-                        return;
-                    }
-                    inserted = canvas.insertInBranch(selectedStep, step);
-                    break;
-
-                case "Before":
-                    // Найти предшественника выбранного узла
-                    Step predecessor = findPredecessor(selectedStep);
-                    if (predecessor == null) {
-                        updateStatus("Error: Cannot insert before root step");
-                        return;
-                    }
-                    if (step instanceof Branch) {
-                        inserted = canvas.addBranch(predecessor, step);
-                    } else {
-                        inserted = canvas.addStep(predecessor, step);
-                    }
-                    break;
+            if (!branch) {
+                inserted = canvas.addStep(selectedStep, step);
+            } else {
+                inserted = canvas.insertInBranch(selectedStep, step);
             }
 
             if (inserted != null) {
                 activateStep(inserted);
                 selectStep(inserted);
-                updateStatus("Inserted " + step.getClass().getSimpleName() + " " + mode);
+                updateStatus("Inserted " + step.getClass().getSimpleName() + " branch: " + branch);
             }
 
         } catch (Exception e) {
@@ -313,16 +257,6 @@ public class CompleteDemo extends Application {
         updateStatus("Deleted: " + stepName);
     }
 
-    private Step findPredecessor(Step step) {
-        return canvas.getChildren().stream()
-                .filter(n -> n instanceof Step)
-                .map(n -> (Step) n)
-                .filter(n -> n.out()
-                        .stream()
-                        .anyMatch(conn -> conn.getTarget() == step))
-                .findFirst()
-                .orElse(null);
-    }
 
     private void updateStatus(String message) {
         statusLabel.setText(message);

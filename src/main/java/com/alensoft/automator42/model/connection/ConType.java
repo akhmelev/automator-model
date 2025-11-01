@@ -9,7 +9,7 @@ import javafx.geometry.Point2D;
  * Типы соединений для разных узлов.
  * Определяет точки подключения и метки.
  */
-public enum ConnectionType {
+public enum ConType implements Comparable<ConType> {
     // MAIN - прямой поток (bottom → top) использует Arrow
     DOWN("", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OK),
     BRANCH("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.IN),
@@ -26,7 +26,7 @@ public enum ConnectionType {
 
     private final ArrowType direction; // true = ArrowIf, false = Arrow
 
-    ConnectionType(String label, AnchorPoint sourceAnchor, AnchorPoint targetAnchor, ArrowType direction) {
+    ConType(String label, AnchorPoint sourceAnchor, AnchorPoint targetAnchor, ArrowType direction) {
         this.label = label;
         this.sourceAnchor = sourceAnchor;
         this.targetAnchor = targetAnchor;

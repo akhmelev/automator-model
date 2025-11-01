@@ -1,7 +1,7 @@
 package com.alensoft.automator42.model;
 
 import com.alensoft.automator42.model.canvas.Canvas;
-import com.alensoft.automator42.model.connection.ConnectionManager;
+import com.alensoft.automator42.model.connection.ConManager;
 import com.alensoft.automator42.model.step.Branch;
 import com.alensoft.automator42.model.step.Process;
 import com.alensoft.automator42.model.step.Step;
@@ -19,7 +19,7 @@ public class MiniDemo extends Application {
     @Override
     public void start(Stage primaryStage) {
         Canvas canvas = new Canvas(500, 20);
-        ConnectionManager cm = canvas.getConnectionManager();
+        ConManager cm = canvas.getConManager();
 
         // Построение блок-схемы с множественными выходами
         Step begin = canvas.getSelectedStep();
@@ -36,15 +36,15 @@ public class MiniDemo extends Application {
 //        canvas.getChildren().add(errorHandler);
 //
 //        // Множественные выходы от Decision - используем ArrowIf
-//        cm.createConnection(decision, errorHandler, ConnectionType.NOK);
+//        cm.createCon(decision, errorHandler, ConType.NOK);
 //
 //        // Продолжение основной ветки
 //        BaseStep saveResult = canvas.addMainStep(processData,new ProcessStep("Save Result"));
 //        saveResult.relocate(decision.getLayoutX(), decision.getLayoutY() + 300);
 //
 //        // Слияние веток - используем MAIN (Arrow) так как идет вертикально вниз
-//        cm.createConnection(processData, saveResult, ConnectionType.MAIN);
-//        cm.createConnection(errorHandler, saveResult, ConnectionType.MERGE);
+//        cm.createCon(processData, saveResult, ConType.MAIN);
+//        cm.createCon(errorHandler, saveResult, ConType.MERGE);
 
         // UI
         BorderPane root = new BorderPane();
@@ -54,7 +54,7 @@ public class MiniDemo extends Application {
         root.setTop(toolbar);
 
         Scene scene = new Scene(root, 1200, 800);
-        primaryStage.setTitle("Flowchart with Multiple Connections");
+        primaryStage.setTitle("Flowchart with Multiple Cons");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -71,7 +71,7 @@ public class MiniDemo extends Application {
         Button addDecisionBtn = new Button("Add Decision");
         addDecisionBtn.setOnAction(e -> {
             Branch step = new Branch("Decision?");
-            Step lastStep = canvas.addBranch(canvas.getSelectedStep(), step);
+            Step lastStep = canvas.addStep(canvas.getSelectedStep(), step);
             canvas.setSelectedStep(lastStep);
         });
 
@@ -82,10 +82,10 @@ public class MiniDemo extends Application {
             canvas.setSelectedStep(lastStep);
         });
 
-        Button clearConnectionsBtn = new Button("Clear Connections");
-//        clearConnectionsBtn.setOnAction(e -> canvas.clearConnections());
+        Button clearConsBtn = new Button("Clear Cons");
+//        clearConsBtn.setOnAction(e -> canvas.clearCons());
 
-        HBox toolbar = new HBox(10, addProcessBtn, addDecisionBtn, addIOBtn, clearConnectionsBtn);
+        HBox toolbar = new HBox(10, addProcessBtn, addDecisionBtn, addIOBtn, clearConsBtn);
         toolbar.setPadding(new Insets(10));
         toolbar.setStyle("-fx-background-color: #f0f0f0;");
 

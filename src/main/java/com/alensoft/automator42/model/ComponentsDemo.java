@@ -36,7 +36,7 @@ public class ComponentsDemo extends Application {
         Button addDecisionBtn = new Button("Добавить решение");
         addDecisionBtn.setOnAction(e -> {
             Branch step = new Branch("Decision?");
-            Step lastStep = canvas.addBranch(canvas.getSelectedStep(), step);
+            Step lastStep = canvas.addStep(canvas.getSelectedStep(), step);
             canvas.setSelectedStep(lastStep);
         });
 

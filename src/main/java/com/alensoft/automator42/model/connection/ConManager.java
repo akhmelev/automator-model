@@ -7,18 +7,20 @@ import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class ConnectionManager {
+public class ConManager {
     private final Pane canvas;
 
-    public ConnectionManager(Pane canvas) {
+    public ConManager(Pane canvas) {
         this.canvas = canvas;
     }
 
-    public Connection createConnection(Step source, Step target, ConnectionType type) {
+    public Connect createCon(Step source, Step target, ConType type) {
         if (source == null || target == null) {
             throw new IllegalArgumentException("Source and target steps cannot be null");
         }
@@ -26,7 +28,7 @@ public class ConnectionManager {
         if (source == target) {
             throw new IllegalArgumentException("Cannot connect step to itself");
         }
-        Optional<Connection> exists = getConnection(source, target, type);
+        Optional<Connect> exists = getCon(source, target, type);
         // Проверка на дублирование
         if (exists.isPresent()) {
             return exists.get();
@@ -42,53 +44,52 @@ public class ConnectionManager {
         arrow.toBack(); // Стрелки за узлами
 
         // Создать соединение
-        Connection connection = new Connection(source, target, type, arrow);
+        Connect con = new Connect(source, target, type, arrow);
 
         // Сохранить в карты
-        source.out().add(connection);
-        target.in().add(connection);
-        return connection;
+        source.out().add(con);
+        target.in().add(con);
+        return con;
     }
 
     /**
      * Удалить соединение
      */
-    public void removeConnection(Connection connection) {
-        if (connection == null) return;
+    public void removeCon(Connect con) {
+        if (con == null) return;
 
-        Step source = connection.getSource();
-        Step target = connection.getTarget();
+        Step source = con.getSource();
+        Step target = con.getTarget();
 
         if (source != null) {
-            source.out().remove(connection);
+            source.out().remove(con);
         }
 
         if (target != null) {
-            target.in().remove(connection);
+            target.in().remove(con);
         }
 
         // Удалить с канваса
-        canvas.getChildren().remove(connection.getArrow());
+        canvas.getChildren().remove(con.getArrow());
     }
 
     /**
      * Удалить все соединения узла
      */
-    public void removeAllConnections(Step step) {
+    public void removeAllCons(Step step) {
         if (step == null) return;
-        Stream.of(step.in(), step.out())
+        List<Connect> prepareAll = Stream.of(step.in(), step.out())
                 .flatMap(Collection::stream)
-                .map(Connection::getArrow)
-                .forEach(canvas.getChildren()::remove);
-        step.in().clear();
-        step.out().clear();
+                .toList();
+        //not merge! Concurrent modification exception
+        prepareAll.forEach(this::removeCon);
     }
 
 
     /**
      * Получить конкретное соединение
      */
-    public Optional<Connection> getConnection(Step source, Step target, ConnectionType type) {
+    public Optional<Connect> getCon(Step source, Step target, ConType type) {
         return source == null || target == null
                 ? Optional.empty()
                 : source.out().stream()
@@ -99,11 +100,11 @@ public class ConnectionManager {
     /**
      * Получить соединение определенного типа от узла
      */
-    public Optional<Connection> getConnectionByType(Step source, ConnectionType type) {
+    public Optional<Connect> getConByType(Step source, ConType... types) {
         return source == null
                 ? Optional.empty()
                 : source.out().stream()
-                .filter(c -> c.getType() == type)
+                .filter(c -> Arrays.asList(types).contains(c.getType()))
                 .findFirst();
 
     }

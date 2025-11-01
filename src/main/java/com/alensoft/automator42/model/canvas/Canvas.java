@@ -1,8 +1,8 @@
 package com.alensoft.automator42.model.canvas;
 
-import com.alensoft.automator42.model.connection.Connection;
-import com.alensoft.automator42.model.connection.ConnectionManager;
-import com.alensoft.automator42.model.connection.ConnectionType;
+import com.alensoft.automator42.model.connection.Connect;
+import com.alensoft.automator42.model.connection.ConManager;
+import com.alensoft.automator42.model.connection.ConType;
 import com.alensoft.automator42.model.step.*;
 import javafx.scene.layout.Pane;
 
@@ -10,22 +10,22 @@ import java.util.*;
 
 public class Canvas extends Pane {
 
+    private final Begin root;
     private Step selectedStep;
-    private final ConnectionManager connectionManager;
+    private final ConManager conManager;
 
     public Canvas(int x, int y) {
         this.setPrefSize(1000, 700);
         this.setStyle("-fx-background-color: linear-gradient(#f8f8f8, #e8eef8);");
+        conManager = new ConManager(this);
 
-        connectionManager = new ConnectionManager(this);
-
-        Begin begin = new Begin("Start");
-        begin.relocate(x, y);
-        getChildren().add(begin);
+        root = new Begin("Start");
+        root.relocate(x, y);
+        getChildren().add(root);
 
         End end = new End("End");
-        addStep(begin, end);
-        selectedStep = begin;
+        addStep(root, end);
+        selectedStep = root;
     }
 
     public Step getSelectedStep() {
@@ -36,8 +36,8 @@ public class Canvas extends Pane {
         this.selectedStep = currentStep;
     }
 
-    public ConnectionManager getConnectionManager() {
-        return connectionManager;
+    public ConManager getConManager() {
+        return conManager;
     }
 
     // ============= ДОБАВЛЕНИЕ УЗЛОВ =============
@@ -46,38 +46,27 @@ public class Canvas extends Pane {
      * Добавить узел в основную цепочку (MAIN flow)
      */
     public Step addStep(final Step prev, final Step step) {
-        return createStep(prev, step, ConnectionType.DOWN);
+        return newStep(prev, step, ConType.DOWN);
     }
 
-
-    public Step addBranch(final Step prev, final Step branch) {
-        if (!(branch instanceof Branch)) {
-            throw new IllegalArgumentException("Step must be a Decision");
-        }
-        createStep(prev, branch, ConnectionType.DOWN);
-        var down = connectionManager.getConnectionByType(branch, ConnectionType.DOWN);
-        Step next = down.orElseThrow().getTarget();
-        connectionManager.createConnection(branch, next, ConnectionType.EMPTY);
-        return branch;
-    }
 
     public Step insertInBranch(final Step branch, final Step step) {
         if (!(branch instanceof Branch)) {
             throw new IllegalArgumentException("Step must be a Decision");
         }
-        var optConnection = connectionManager.getConnectionByType(branch, ConnectionType.EMPTY);
-        ConnectionType outType;
-        if (optConnection.isPresent()) {
-            outType = ConnectionType.MERGE;
+        var optCon = conManager.getConByType(branch, ConType.EMPTY);
+        ConType outType;
+        if (optCon.isPresent()) {
+            outType = ConType.MERGE;
         } else {
-            outType = ConnectionType.DOWN;
-            optConnection = connectionManager.getConnectionByType(branch, ConnectionType.BRANCH);
+            outType = ConType.DOWN;
+            optCon = conManager.getConByType(branch, ConType.BRANCH);
         }
-        Connection connection = optConnection.orElseThrow();
-        Step next = connection.getTarget();
-        connectionManager.removeConnection(connection);
-        connectionManager.createConnection(step, next, outType);
-        createStep(branch, step, ConnectionType.BRANCH);
+        Connect con = optCon.orElseThrow();
+        Step next = con.getTarget();
+        conManager.removeCon(con);
+        conManager.createCon(step, next, outType);
+        newStep(branch, step, ConType.BRANCH);
         return step;
     }
 
@@ -87,103 +76,65 @@ public class Canvas extends Pane {
     /**
      * Универсальная вставка узла с сохранением AST
      */
-    private Step createStep(final Step prev, final Step step, ConnectionType insertionType) {
+    private Step newStep(final Step prev, final Step step, ConType insertionType) {
         if (prev == null || step == null) {
             throw new IllegalArgumentException("Steps cannot be null");
         }
-
-        int fullStep = Step.HEIGHT + Step.STEP;
-
-        // Добавить узел на canvas
         getChildren().add(step);
 
-        double layoutX = prev.getLayoutX();
-        double layoutY = prev.getLayoutY();
-        Connection prevConnection = connectionManager.getConnectionByType(prev, insertionType).orElse(null);
-        if (insertionType != ConnectionType.BRANCH) {
-            step.relocate(layoutX, layoutY + fullStep);
-        } else {
-            step.relocate(layoutX + 200, layoutY);
-
-        }
+        Connect prevCon = conManager.getConByType(prev, insertionType).orElse(null);
         // Найти соединение от prev
-        if (prevConnection != null) {
+        if (prevCon != null) {
             // Есть следующий узел - вставляемся между ними
-            Step nextStep = prevConnection.getTarget();
-
-            // Сдвинуть все узлы вниз от точки вставки
-            shiftStepsDown(nextStep, fullStep);
-
+            Step nextStep = prevCon.getTarget();
             // Переподключить: prev -> step -> next
-            connectionManager.removeConnection(prevConnection);
-            connectionManager.createConnection(prev, step, insertionType);
-            connectionManager.createConnection(step, nextStep, ConnectionType.DOWN);
+            conManager.removeCon(prevCon);
+            conManager.createCon(prev, step, insertionType);
+            conManager.createCon(step, nextStep, ConType.DOWN);
         } else {
             // Нет следующего узла - такого быть не может, но пока есть на старте
-            connectionManager.createConnection(prev, step, insertionType);
-            shiftStepsDown(step, fullStep);
+            conManager.createCon(prev, step, insertionType);
         }
-
+        if (step instanceof Branch) {
+            var down = conManager.getConByType(step, ConType.DOWN, ConType.MERGE);
+            Step next = down.orElseThrow().getTarget();
+            conManager.createCon(step, next, ConType.EMPTY);
+        }
+        update();
         return step;
     }
 
 
-    /**
-     * Сдвинуть узел и все зависимые от него узлы вниз
-     * Использует BFS для обхода всех потомков
-     */
-    private void shiftStepsDown(Step startStep, double offset) {
-        if (startStep == null) return;
-
-        Set<Step> visited = new HashSet<>();
-        Queue<Step> queue = new LinkedList<>();
-
-        queue.add(startStep);
-        visited.add(startStep);
-
-        while (!queue.isEmpty()) {
-            Step current = queue.poll();
-            current.setLayoutY(current.getLayoutY() + offset);
-
-            // Добавить всех потомков
-            visit(current, visited, queue);
-        }
-    }
-
     // ============= УДАЛЕНИЕ УЗЛОВ =============
-
-    /**
-     * Удалить узел с сохранением связей (reconnect соседей)
-     */
     public void removeStep(Step step) {
         if (step == null) return;
 
-        // Нельзя удалить Begin
+        // Нельзя удалить Begin и End
         if (step instanceof Begin || step instanceof End) {
             throw new IllegalArgumentException("Cannot remove Begin/End step");
         }
 
         // Получить входящие и исходящие соединения
-        List<Connection> incoming = step.in();
-        List<Connection> outgoing = step.out();
+        List<Connect> incoming = step.in();
+        List<Connect> outgoing = step.out();
 
         // Если узел - Decision, удалить всю его NO ветку
         if (step instanceof Branch) {
-            var emptyLoop = connectionManager.getConnectionByType(step, ConnectionType.EMPTY);
-            if (emptyLoop.isEmpty()) {
-                Connection connection = connectionManager
-                        .getConnectionByType(step, ConnectionType.BRANCH)
+            var optCon = conManager.getConByType(step, ConType.EMPTY);
+            if (optCon.isEmpty()) {
+                Connect con = conManager
+                        .getConByType(step, ConType.BRANCH)
                         .orElseThrow();
-                Step target = connection.getTarget();
+                Step target = con.getTarget();
                 while (target != null && target != step && target.in().size() == 1) {
-                    connectionManager.removeConnection(connection);
+                    conManager.removeCon(con);
                     removeStep(target);
-                    connection = target.out().getFirst();
-                    target = connection.getTarget();
+                    con = target.out().getFirst();
+                    target = con.getTarget();
                 }
-                connectionManager.removeConnection(connection);
+                conManager.removeCon(con);
             } else {
-                connectionManager.removeConnection(emptyLoop.get());
+                conManager.removeCon(optCon.get());
             }
         }
 
@@ -192,18 +143,10 @@ public class Canvas extends Pane {
             reconnectNeighbors(incoming, outgoing);
         }
 
-        // Сдвинуть узлы вверх после удаления
-        if (!outgoing.isEmpty()) {
-            int fullStep = Step.HEIGHT + Step.STEP;
-            for (Connection conn : outgoing) {
-                shiftStepsUp(conn.getTarget(), fullStep);
-            }
-        }
-
         // Удалить все соединения и сам узел
-        connectionManager.removeAllConnections(step);
+        conManager.removeAllCons(step);
         getChildren().remove(step);
-
+        update();
         // Обновить lastStep если удалили его
         if (selectedStep == step) {
             selectedStep = findNewLastStep();
@@ -211,71 +154,27 @@ public class Canvas extends Pane {
     }
 
 
-//    /**
-//     * Удалить Decision вместе с его содержимым
-//     */
-//    private void removeNoBranch(Step decision) {
-//        Connection branch = connectionManager.getConnectionByType(decision, ConnectionType.BRANCH);
-//        Step target = branch.getTarget();
-//        while (target != null && target != decision && target.in().size() == 1) {
-//            removeStep(target);
-//            target = branch.getTarget();
-//        }
-//    }
-
-    /**
-     * Переподключить соседей при удалении узла
-     */
-    private void reconnectNeighbors(List<Connection> incoming, List<Connection> outgoing) {
-        for (Connection in : incoming) {
+    private void reconnectNeighbors(List<Connect> incoming, List<Connect> outgoing) {
+        Connect out = outgoing.stream()
+                .filter(con -> con.getType() == ConType.DOWN || con.getType() == ConType.MERGE)
+                .findFirst()
+                .orElseThrow();
+        for (Connect in : incoming) {
             Step source = in.getSource();
-            ConnectionType inType = in.getType();
-
-            for (Connection out : outgoing) {
-                Step target = out.getTarget();
-                ConnectionType outType = out.getType();
-
-                // Сохранить тип соединения (приоритет у нестандартного типа)
-                ConnectionType reconnectType = inType != ConnectionType.DOWN
-                        ? (
-                        //но при слиянии проверяем пустые ветки
-                        inType == ConnectionType.BRANCH && outType == ConnectionType.MERGE
-                                ? ConnectionType.EMPTY
-                                : inType)
-                        :
-                        outType;
-
-                try {
-                    connectionManager.createConnection(source, target, reconnectType);
-                } catch (IllegalArgumentException e) {
-                    // Соединение уже существует - игнорируем
-                }
+            ConType inType = in.getType();
+            Step target = out.getTarget();
+            ConType outType = out.getType();
+            try {
+                conManager.createCon(source, target, inType);
+            } catch (IllegalArgumentException e) {
+                // Соединение уже существует - игнорируем
             }
         }
     }
 
-    /**
-     * Сдвинуть узел и зависимые узлы вверх
-     */
-    private void shiftStepsUp(Step startStep, double offset) {
-        if (startStep == null) return;
-
-        Set<Step> visited = new HashSet<>();
-        Queue<Step> queue = new LinkedList<>();
-
-        queue.add(startStep);
-        visited.add(startStep);
-
-        while (!queue.isEmpty()) {
-            Step current = queue.poll();
-            current.setLayoutY(current.getLayoutY() - offset);
-
-            visit(current, visited, queue);
-        }
-    }
 
     private void visit(Step step, Set<Step> visited, Queue<Step> queue) {
-        for (Connection conn : step.out()) {
+        for (Connect conn : step.out()) {
             Step child = conn.getTarget();
             if (!visited.contains(child)) {
                 visited.add(child);
@@ -291,7 +190,7 @@ public class Canvas extends Pane {
         return getChildren().stream()
                 .filter(step -> step instanceof Step)
                 .map(step -> (Step) step)
-                .filter(step -> connectionManager.getConnectionByType(step, ConnectionType.DOWN) == null)
+                .filter(step -> conManager.getConByType(step, ConType.DOWN) == null)
                 .filter(step -> !(step instanceof Connector)) // Не коннекторы
                 .findFirst()
                 .orElse(null);
@@ -304,7 +203,6 @@ public class Canvas extends Pane {
      * Проверить валидность AST (все узлы связаны, от Begin можно дойти до End)
      */
     public boolean validateAST() {
-        Step root = getRootStep();
         if (root == null) return false;
 
         Set<Step> reachable = new HashSet<>();
@@ -326,14 +224,25 @@ public class Canvas extends Pane {
         return reachable.size() == totalSteps;
     }
 
-    /**
-     * Получить корневой узел (Begin)
-     */
-    public Step getRootStep() {
-        return getChildren().stream()
-                .filter(step -> step instanceof Begin)
-                .map(step -> (Step) step)
-                .findFirst()
-                .orElse(null);
+    public void update() {
+        GraphLayoutUpdater.updateLayout(root);
+        //update(startNode, startNode.getLayoutX(), startNode.getLayoutY(), new HashSet<>());
+    }
+
+
+    private void update(Step current, double x, double y, Set<Step> visited) {
+        if (current == null || !visited.add(current)) {
+            return;
+        }
+
+        current.relocate(x, y);
+
+        Optional<Connect> mainCon = conManager.getConByType(current, ConType.DOWN);
+        mainCon.ifPresent(con -> update(con.getTarget(), x, y + Step.HEIGHT + Step.STEP, visited));
+
+        if (current instanceof Branch) {
+            Optional<Connect> branchCon = conManager.getConByType(current, ConType.BRANCH);
+            branchCon.ifPresent(con -> update(con.getTarget(), x + Step.WIDTH, y + Step.HEIGHT + Step.STEP, visited));
+        }
     }
 }

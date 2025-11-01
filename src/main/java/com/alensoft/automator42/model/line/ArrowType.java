@@ -1,5 +1,6 @@
 package com.alensoft.automator42.model.line;
 
+import com.alensoft.automator42.model.step.Step;
 import javafx.geometry.Point2D;
 
 public enum ArrowType {
@@ -9,7 +10,7 @@ public enum ArrowType {
     IN_EMPTY(25, 0, 0, 1, 1, 0), //rigth absolute 25 px, down, left
 
     OUT(0, 1, 1, 0), //down left
-    OUT_TOP(0, 25, 100, 0,
+    OUT_TOP(0, 25, Step.WIDTH/2+27, 0,
             0, 1, 1, 0);//down 25 px, right 100 px, up, left
 
     final double[] dXY;

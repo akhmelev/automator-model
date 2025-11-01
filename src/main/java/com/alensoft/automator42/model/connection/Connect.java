@@ -7,13 +7,13 @@ import javafx.scene.Group;
  * Представляет соединение между двумя узлами.
  * Отделяет логику связей от узлов (SRP).
  */
-public class Connection {
+public class Connect implements Comparable<Connect> {
     private final Step source;
     private final Step target;
-    private final ConnectionType type;
+    private final ConType type;
     private final Group arrow;
 
-    public Connection(Step source, Step target, ConnectionType type, Group arrow) {
+    public Connect(Step source, Step target, ConType type, Group arrow) {
         if (source == null || target == null) {
             throw new IllegalArgumentException("Source and target steps cannot be null");
         }
@@ -31,7 +31,7 @@ public class Connection {
         return target;
     }
 
-    public ConnectionType getType() {
+    public ConType getType() {
         return type;
     }
 
@@ -42,7 +42,7 @@ public class Connection {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Connection other)) return false;
+        if (!(obj instanceof Connect other)) return false;
         return source.equals(other.source) && 
                target.equals(other.target) && 
                type == other.type;
@@ -51,5 +51,10 @@ public class Connection {
     @Override
     public int hashCode() {
         return source.hashCode() * 31 + target.hashCode() * 17 + type.hashCode();
+    }
+
+    @Override
+    public int compareTo(Connect o) {
+        return this.type.compareTo(o.type);
     }
 }

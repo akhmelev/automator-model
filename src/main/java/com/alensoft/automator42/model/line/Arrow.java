@@ -1,8 +1,10 @@
 package com.alensoft.automator42.model.line;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
@@ -35,6 +37,15 @@ public class Arrow extends Group {
         head.setFill(Color.web("#2b2b2b"));
         start.addListener((obs, oldV, newV) -> updateArrow());
         end.addListener((obs, oldV, newV) -> updateArrow());
+        //add text OK at start
+        Label conLabel = new Label(direction.name());
+        conLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #2b2b2b;");
+        conLabel.textProperty().bind(Bindings.createStringBinding(direction::name));
+        conLabel.layoutXProperty().bind(Bindings.createDoubleBinding(() -> (start.getValue().getX()), startProperty, endProperty));
+        conLabel.layoutYProperty().bind(Bindings.createDoubleBinding(() -> (start.getValue().getY()), startProperty, endProperty));
+
+        getChildren().add(conLabel);
+
         getChildren().addAll(polyline, head);
         updateArrow();
     }

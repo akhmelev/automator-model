@@ -1,6 +1,6 @@
 package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.connection.Connection;
+import com.alensoft.automator42.model.connection.Connect;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.ObjectProperty;
@@ -24,17 +24,17 @@ public abstract class Step extends Pane {
     public static final int WIDTH = 128;
     public static final int HEIGHT = 64;
     public static final int STEP = 32;
-    
+
     protected Label label = new Label();
-    
+
     // Точки подключения для стрелок
     private final ObjectProperty<Point2D> top = new SimpleObjectProperty<>();
     private final ObjectProperty<Point2D> left = new SimpleObjectProperty<>();
     private final ObjectProperty<Point2D> right = new SimpleObjectProperty<>();
     private final ObjectProperty<Point2D> bottom = new SimpleObjectProperty<>();
 
-    private final List<Connection> in=new ArrayList<>();
-    private final List<Connection> out=new ArrayList<>();
+    private final List<Connect> in = new ArrayList<>();
+    private final List<Connect> out = new ArrayList<>();
 
     public Step(String text) {
         label.setText(text);
@@ -52,12 +52,12 @@ public abstract class Step extends Pane {
             Bounds b = localToParent(getBoundsInLocal());
             return new Point2D(b.getMinX() + b.getWidth() / 2.0, b.getMinY());
         }));
-        
+
         left.bind(getBinding(() -> {
             Bounds b = localToParent(getBoundsInLocal());
             return new Point2D(b.getMinX(), b.getMinY() + b.getHeight() / 2.0);
         }));
-        
+
         right.bind(getBinding(() -> {
             Bounds b = localToParent(getBoundsInLocal());
             return new Point2D(b.getMinX() + b.getWidth(), b.getMinY() + b.getHeight() / 2.0);
@@ -76,8 +76,8 @@ public abstract class Step extends Pane {
                 layoutXProperty(), layoutYProperty());
     }
 
-    protected void postConstruct(Shape shape, Color strokeColor, Color fillColor, 
-                                double strokeWidth, int prefWidth, int prefHeight) {
+    protected void postConstruct(Shape shape, Color strokeColor, Color fillColor,
+                                 double strokeWidth, int prefWidth, int prefHeight) {
         shape.setStroke(strokeColor);
         shape.setFill(fillColor);
         shape.setStrokeWidth(strokeWidth);
@@ -107,11 +107,11 @@ public abstract class Step extends Pane {
         return right;
     }
 
-    public List<Connection> in() {
+    public List<Connect> in() {
         return in;
     }
 
-    public List<Connection> out() {
+    public List<Connect> out() {
         return out;
     }
 
@@ -143,6 +143,20 @@ public abstract class Step extends Pane {
         Bounds b = getBoundsInLocal();
         label.setLayoutX((b.getWidth() - label.prefWidth(-1)) / 2.0);
         label.setLayoutY((b.getHeight() - label.prefHeight(-1)) / 2.0);
+    }
+
+    public List<Step> getNextSteps() {
+        return out.stream()
+                .sorted()
+                .map(Connect::getTarget)
+                .toList();
+    }
+
+    public List<Step> getPreviousSteps() {
+        return out.stream()
+                .sorted()
+                .map(Connect::getSource)
+                .toList();
     }
 
     private static class Delta {
