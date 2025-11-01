@@ -1,8 +1,8 @@
 package com.alensoft.automator42.model.canvas;
 
-import com.alensoft.automator42.model.connection.Connect;
 import com.alensoft.automator42.model.connection.ConManager;
 import com.alensoft.automator42.model.connection.ConType;
+import com.alensoft.automator42.model.connection.Connect;
 import com.alensoft.automator42.model.step.*;
 import javafx.scene.layout.Pane;
 
@@ -122,17 +122,18 @@ public class Canvas extends Pane {
         if (step instanceof Branch) {
             var optCon = conManager.getConByType(step, ConType.EMPTY);
             if (optCon.isEmpty()) {
-                Connect con = conManager
-                        .getConByType(step, ConType.BRANCH)
-                        .orElseThrow();
-                Step target = con.getTarget();
-                while (target != null && target != step && target.in().size() == 1) {
+                optCon = conManager.getConByType(step, ConType.BRANCH);
+                if (optCon.isPresent()) {
+                    Connect con = optCon.get();
+                    Step target = con.getTarget();
+                    while (target != null && target != step && target.in().size() == 1 && !target.out().isEmpty()) {
+                        conManager.removeCon(con);
+                        con = target.out().getFirst();
+                        removeStep(target);
+                        target = con.getTarget();
+                    }
                     conManager.removeCon(con);
-                    removeStep(target);
-                    con = target.out().getFirst();
-                    target = con.getTarget();
                 }
-                conManager.removeCon(con);
             } else {
                 conManager.removeCon(optCon.get());
             }
@@ -163,7 +164,9 @@ public class Canvas extends Pane {
             Step source = in.getSource();
             ConType inType = in.getType();
             Step target = out.getTarget();
-            ConType outType = out.getType();
+            if (inType == ConType.BRANCH && out.getType() == ConType.MERGE) {
+                inType = ConType.EMPTY;
+            }
             try {
                 conManager.createCon(source, target, inType);
             } catch (IllegalArgumentException e) {

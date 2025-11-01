@@ -119,7 +119,7 @@ public class Arrow extends Group {
 
     private void shortenLine(List<Point2D> path, ArrowType direction) {
         Point2D last = path.get(path.size() - 1);
-        if (direction == ArrowType.IN || direction == ArrowType.OK) {
+        if (direction == ArrowType.IN || direction == ArrowType.NORMAL) {
             last = new Point2D(last.getX(), last.getY() - 4);
         } else {
             last = new Point2D(last.getX() + 4, last.getY());

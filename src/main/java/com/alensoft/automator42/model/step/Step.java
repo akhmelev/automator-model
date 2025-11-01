@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 
 public abstract class Step extends Pane {
     public static final int WIDTH = 128;
-    public static final int HEIGHT = 64;
+    public static final int HEIGHT = 32;
     public static final int STEP = 32;
 
     protected Label label = new Label();
@@ -49,25 +49,37 @@ public abstract class Step extends Pane {
     }
 
     private void bindAnchorPoints() {
-        top.bind(getBinding(() -> {
-            Bounds b = localToParent(getBoundsInLocal());
-            return new Point2D(b.getMinX() + b.getWidth() / 2.0, b.getMinY());
-        }));
+        top.bind(getBinding(this::getTopAnchor));
+        left.bind(getBinding(this::getLeftAnchor));
+        right.bind(getBinding(this::getRightAnchor));
+        bottom.bind(getBinding(this::getBottomAnchor));
+    }
 
-        left.bind(getBinding(() -> {
-            Bounds b = localToParent(getBoundsInLocal());
-            return new Point2D(b.getMinX(), b.getMinY() + b.getHeight() / 2.0);
-        }));
+    public void updateAnchors() {
+        top.set(getTopAnchor());
+        left.set(getLeftAnchor());
+        right.set(getRightAnchor());
+        bottom.set(getBottomAnchor());
+    }
 
-        right.bind(getBinding(() -> {
-            Bounds b = localToParent(getBoundsInLocal());
-            return new Point2D(b.getMinX() + b.getWidth(), b.getMinY() + b.getHeight() / 2.0);
-        }));
+    private Point2D getTopAnchor() {
+        Bounds b = localToParent(getBoundsInLocal());
+        return new Point2D(b.getMinX() + b.getWidth() / 2.0, b.getMinY());
+    }
 
-        bottom.bind(getBinding(() -> {
-            Bounds b = localToParent(getBoundsInLocal());
-            return new Point2D(b.getMinX() + b.getWidth() / 2.0, b.getMinY() + b.getHeight());
-        }));
+    private Point2D getLeftAnchor() {
+        Bounds b = localToParent(getBoundsInLocal());
+        return new Point2D(b.getMinX(), b.getMinY() + b.getHeight() / 2.0);
+    }
+
+    private Point2D getRightAnchor() {
+        Bounds b = localToParent(getBoundsInLocal());
+        return new Point2D(b.getMinX() + b.getWidth(), b.getMinY() + b.getHeight() / 2.0);
+    }
+
+    private Point2D getBottomAnchor() {
+        Bounds b = localToParent(getBoundsInLocal());
+        return new Point2D(b.getMinX() + b.getWidth() / 2.0, b.getMinY() + b.getHeight());
     }
 
     private ObjectBinding<Point2D> getBinding(Callable<Point2D> func) {
@@ -141,9 +153,17 @@ public abstract class Step extends Pane {
     }
 
     protected void layoutLabelCentered() {
-        Bounds b = getBoundsInLocal();
-        label.setLayoutX((b.getWidth() - label.prefWidth(-1)) / 2.0);
-        label.setLayoutY((b.getHeight() - label.prefHeight(-1)) / 2.0);
+        double stepW = getPrefWidth();
+        double stepH = getPrefHeight();
+
+        double labelW = label.getPrefWidth();
+        if (labelW <= 0) {
+            labelW = stepW;
+        }
+        double labelH = label.prefHeight(labelW);
+
+        label.setLayoutX((stepW - labelW) / 2);
+        label.setLayoutY((stepH - labelH) / 2);
     }
 
     public List<Step> getNextSteps() {

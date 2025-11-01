@@ -11,9 +11,9 @@ import javafx.geometry.Point2D;
  */
 public enum ConType implements Comparable<ConType> {
     // MAIN - прямой поток (bottom → top) использует Arrow
-    DOWN("", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OK),
+    DOWN("", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.NORMAL),
     BRANCH("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.IN),
-    EMPTY("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.IN_EMPTY),
+    EMPTY("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.EMPTY),
     MERGE("No", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OUT);
 
     private final String label;

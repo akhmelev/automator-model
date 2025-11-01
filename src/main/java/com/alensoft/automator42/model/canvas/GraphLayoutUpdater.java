@@ -127,7 +127,7 @@ class GraphLayoutUpdater {
 
         // 6. Возврат
         // Возвращаем самый низкий Y и самый правый X
-        return new LayoutResult(nextAvailableY, maxX);
+        return new LayoutResult(dataMap.get(nextStep).gridY, maxX);
     }
 
 

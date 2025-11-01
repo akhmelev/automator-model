@@ -5,9 +5,9 @@ import javafx.geometry.Point2D;
 
 public enum ArrowType {
 
-    OK(0, 0.5, 1, 0, 0, 1),//down, left or right, down
+    NORMAL(0, 0.5, 1, 0, 0, 1),//down, left or right, down
     IN(0.5, 0, 1, 0, 0, 1), //right, right, down
-    IN_EMPTY(25, 0, 0, 1, 1, 0), //rigth absolute 25 px, down, left
+    EMPTY(25, 0, 0, 1, 1, 0), //rigth absolute 25 px, down, left
 
     OUT(0, 1, 1, 0), //down left
     OUT_TOP(0, 25, Step.WIDTH/2+27, 0,
@@ -20,7 +20,7 @@ public enum ArrowType {
     }
 
     public ArrowType update(Point2D start, Point2D end) {
-        if (this == OK || this == IN || this == IN_EMPTY) {
+        if (this == NORMAL || this == IN || this == EMPTY) {
             return this;
         }
         if (start.getY() > end.getY()) {
