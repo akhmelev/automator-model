@@ -229,23 +229,5 @@ public class Canvas extends Pane {
 
     public void update() {
         GraphLayoutUpdater.updateLayout(root);
-        //update(startNode, startNode.getLayoutX(), startNode.getLayoutY(), new HashSet<>());
-    }
-
-
-    private void update(Step current, double x, double y, Set<Step> visited) {
-        if (current == null || !visited.add(current)) {
-            return;
-        }
-
-        current.relocate(x, y);
-
-        Optional<Connect> mainCon = conManager.getConByType(current, ConType.DOWN);
-        mainCon.ifPresent(con -> update(con.getTarget(), x, y + Step.HEIGHT + Step.STEP, visited));
-
-        if (current instanceof Branch) {
-            Optional<Connect> branchCon = conManager.getConByType(current, ConType.BRANCH);
-            branchCon.ifPresent(con -> update(con.getTarget(), x + Step.WIDTH, y + Step.HEIGHT + Step.STEP, visited));
-        }
     }
 }
