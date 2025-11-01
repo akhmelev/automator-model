@@ -1,5 +1,6 @@
 package com.alensoft.automator42.model.canvas;
 
+
 import com.alensoft.automator42.model.step.Step;
 
 import java.util.*;
@@ -7,152 +8,143 @@ import java.util.*;
 class GraphLayoutUpdater {
 
     private static class StepData {
-        boolean visited = false;
-        int branchId = -1;
-        int inDegree = 0;
+        int gridX = -1;
+        int gridY = -1;
     }
+
+    private static class LayoutResult {
+        final int nextY; // Следующая доступная Y-координата (самая низкая точка)
+        final int maxX;  // Самый правый использованный X в подграфе
+        LayoutResult(int nextY, int maxX) {
+            this.nextY = nextY;
+            this.maxX = maxX;
+        }
+    }
+
+    private static Map<Step, StepData> dataMap;
+    private static Set<Step> visited;
+    private static Set<Step> mergePoints;
 
     public static void updateLayout(Step root) {
         if (root == null) return;
 
-        Map<Step, StepData> dataMap = new HashMap<>();
-        Set<Step> allSteps = new LinkedHashSet<>();
+        dataMap = new HashMap<>();
+        mergePoints = new HashSet<>();
 
-        // 1. Обход DFS для сбора всех узлов и расчета inDegree (не изменился)
-        collectAndCalculateDegrees(root, dataMap, allSteps);
+        collectAllStepsAndMerges(root);
 
-        // 2. Многоуровневая топологическая сортировка (Кан) и присвоение layoutY (не изменился)
+        visited = new HashSet<>();
+        placeRecursive(root, 0, 0);
 
-        Queue<Step> readyQueue = new LinkedList<>();
-        for (Step step : allSteps) {
-            if (dataMap.get(step).inDegree == 0) {
-                readyQueue.add(step);
+        applyLayoutCoordinates(root, dataMap);
+    }
+
+    // --- Шаг 1: Сбор данных и точек слияния ---
+    private static void collectAllStepsAndMerges(Step step) {
+        if (dataMap.containsKey(step)) return;
+        dataMap.put(step, new StepData());
+
+        for (Step child : step.getNextSteps()) {
+            if (dataMap.containsKey(child)) {
+                mergePoints.add(child);
             }
-        }
-
-        final double Y_STEP = Step.HEIGHT + Step.STEP;
-        double currentY = 0;
-        List<Step> orderedSteps = new ArrayList<>();
-
-        while (!readyQueue.isEmpty()) {
-            int levelSize = readyQueue.size();
-            Queue<Step> nextLevelQueue = new LinkedList<>();
-
-            for (int i = 0; i < levelSize; i++) {
-                Step current = readyQueue.poll();
-                current.setLayoutY(root.getLayoutY() + currentY);
-                orderedSteps.add(current);
-
-                for (Step child : current.getNextSteps()) {
-                    if (dataMap.containsKey(child)) {
-                        StepData childData = dataMap.get(child);
-                        childData.inDegree--;
-                        if (childData.inDegree == 0) {
-                            nextLevelQueue.add(child);
-                        }
-                    }
-                }
-            }
-            readyQueue = nextLevelQueue;
-            currentY += Y_STEP;
-        }
-
-        // 3. Определение layoutX (Без пересечений)
-
-        // Map для отслеживания самой правой X-координаты, занятой на каждом Y-уровне.
-        // Ключ: Y-координата, Значение: Самый правый используемый branchId.
-        Map<Double, Integer> maxBranchIdAtY = new HashMap<>();
-
-        // Map для хранения ID активных веток на каждом X-уровне
-        Map<Integer, Double> branchIdToMaxY = new HashMap<>();
-
-        // Максимальный BranchId, использованный до сих пор, для новых веток.
-        int nextAvailableBranchId = 1;
-
-        for (Step current : orderedSteps) {
-            StepData currentData = dataMap.get(current);
-
-            // 1. Определение branchId
-            int branchId;
-
-            if (current == root) {
-                branchId = 0;
-                currentData.branchId = 0;
-            } else if (currentData.branchId == -1) {
-                // 2. Если ID не назначен (новая ветка или слияние)
-
-                // Находим максимально занятый ID на текущем уровне Y
-                int maxUsedIdOnCurrentY = maxBranchIdAtY.getOrDefault(current.getLayoutY(), 0);
-
-                // Новая ветка начинается за всеми уже размещенными на этом уровне,
-                // или за всеми ранее использованными, смотря что правее.
-
-                // Начинаем поиск новой линии с max(maxUsedIdOnCurrentY + 1, nextAvailableBranchId)
-                branchId = Math.max(maxUsedIdOnCurrentY + 1, nextAvailableBranchId);
-
-                currentData.branchId = branchId;
-                nextAvailableBranchId = branchId + 1;
-            } else {
-                // 3. ID уже унаследован
-                branchId = currentData.branchId;
-            }
-
-            // Обновляем maxBranchIdAtY для текущего уровня
-            maxBranchIdAtY.put(current.getLayoutY(),
-                    Math.max(maxBranchIdAtY.getOrDefault(current.getLayoutY(), 0), branchId));
-
-
-            final double X_STEP = 130.0;
-            current.setLayoutX(root.getLayoutX() + branchId * X_STEP);
-
-            // 4. Распределение branchId потомкам (Наследование)
-            if (!current.getNextSteps().isEmpty()) {
-                List<Step> childrenList = current.getNextSteps();
-
-                // 1. Наследуем ID первому потомку (ГЛАВНОЙ ЛИНИИ)
-                Step primaryChild = childrenList.get(0);
-                StepData primaryData = dataMap.get(primaryChild);
-
-                // Если ID еще не назначен, он наследует ID родителя.
-                if (primaryData.branchId == -1) {
-                    primaryData.branchId = branchId;
-                }
-
-                // 2. Остальные потомки получают новый, самый правый ID
-                for (int j = 1; j < childrenList.size(); j++) {
-                    Step secondaryChild = childrenList.get(j);
-                    StepData secondaryData = dataMap.get(secondaryChild);
-
-                    if (secondaryData.branchId == -1) {
-                        // Эта новая ветка (боковая) должна гарантированно
-                        // находиться правее, чем все уже используемые ID, включая текущий.
-
-                        // Берем новый, самый правый ID
-                        int newBranchId = nextAvailableBranchId;
-
-                        secondaryData.branchId = newBranchId;
-                        nextAvailableBranchId = newBranchId + 1;
-                    }
-                }
-            }
+            collectAllStepsAndMerges(child);
         }
     }
 
-    private static void collectAndCalculateDegrees(Step step, Map<Step, StepData> dataMap, Set<Step> allSteps) {
-        StepData data = dataMap.computeIfAbsent(step, k -> new StepData());
+    // --- Шаг 2: Рекурсивная раскладка (DFS) ---
+    private static LayoutResult placeRecursive(Step current, int currentX, int currentY) {
+        StepData currentData = dataMap.get(current);
 
-        if (data.visited) return;
-        data.visited = true;
-
-        allSteps.add(step);
-
-        for (Step child : step.getNextSteps()) {
-            if (!dataMap.containsKey(child)) {
-                dataMap.put(child, new StepData());
+        // A. Слияние (Повторное посещение):
+        if (visited.contains(current)) {
+            // Если мы пришли сюда второй раз, это узел слияния.
+            // Обновляем его Y, если текущая ветка длиннее.
+            if (currentY > currentData.gridY) {
+                currentData.gridY = currentY;
             }
-            dataMap.get(child).inDegree++;
+            // Возвращаем его Y и X (без изменения).
+            // Это гарантирует, что следующая боковая ветка начнет выравниваться с этой точкой.
+            return new LayoutResult(currentData.gridY, currentX);
+        }
+        visited.add(current);
 
-            collectAndCalculateDegrees(child, dataMap, allSteps);
+        // 1. Размещение (X и Y)
+        currentData.gridX = currentX;
+        currentData.gridY = currentY;
+
+        // 2. Конечный узел
+        if (current.getNextSteps().isEmpty()) {
+            return new LayoutResult(currentY + 1, currentX);
+        }
+
+        List<Step> children = current.getNextSteps();
+        int nextY = currentY + 1;
+
+        // 3. Обработка Главной/Текущей Ветки (Индекс 0)
+        Step primaryChild = children.get(0);
+        LayoutResult primaryResult = placeRecursive(primaryChild, currentX, nextY);
+
+        int nextAvailableY = primaryResult.nextY; // Y после главной ветки
+        int maxX = primaryResult.maxX;
+
+        // 4. Обработка Боковых Веток (Индекс 1+)
+        if (children.size() > 1) {
+
+            // X для первой боковой ветки:
+            // Самая правая точка, достигнутая в основной ветке (maxX) + 1 (зазор).
+            int nextBranchX = maxX + 1;
+
+            for (int i = 1; i < children.size(); i++) {
+                Step sideChild = children.get(i);
+
+                LayoutResult sideResult = placeRecursive(sideChild, nextBranchX, nextY);
+
+                // Обновляем Y: берем самый низкий Y
+                nextAvailableY = Math.max(nextAvailableY, sideResult.nextY);
+
+                // Обновляем X для следующей боковой ветки:
+                nextBranchX = sideResult.maxX + 1;
+            }
+            // Обновляем maxX: он равен самой правой точке, достигнутой в боковых ветках
+            maxX = nextBranchX - 1;
+        }
+
+        // 5. Размещение узла слияния (`end`)
+        // Если следующий узел является слиянием, устанавливаем его Y на nextAvailableY.
+        // Это гарантирует, что end не "убежит" вверх.
+        Step nextStep = primaryChild;
+        if (mergePoints.contains(nextStep)) {
+            StepData mergeData = dataMap.get(nextStep);
+            if (mergeData.gridY == -1 || nextAvailableY > mergeData.gridY) {
+                // ПРИСВОЕНИЕ: Узел слияния получает самый низкий Y
+                mergeData.gridY = nextAvailableY;
+            }
+        } else {
+            // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Если следующий узел НЕ слияние,
+            // он уже был размещен главной веткой. Нам не нужно тут ничего делать.
+        }
+
+        // 6. Возврат
+        // Возвращаем самый низкий Y и самый правый X
+        return new LayoutResult(nextAvailableY, maxX);
+    }
+
+
+    // --- Шаг 3: Применение координат ---
+    private static void applyLayoutCoordinates(Step root, Map<Step, StepData> dataMap) {
+        Set<Step> allSteps = dataMap.keySet();
+
+        final double X_STEP = 130.0;
+        final double Y_STEP = Step.HEIGHT + Step.STEP;
+
+        for (Step step : allSteps) {
+            StepData data = dataMap.get(step);
+
+            if (data.gridX != -1 && data.gridY != -1) {
+                step.setLayoutX(root.getLayoutX() + data.gridX * X_STEP);
+                step.setLayoutY(root.getLayoutY() + data.gridY * Y_STEP);
+            }
         }
     }
 }

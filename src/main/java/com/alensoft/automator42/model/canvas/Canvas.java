@@ -82,7 +82,7 @@ public class Canvas extends Pane {
         }
         getChildren().add(step);
 
-        Connect prevCon = conManager.getConByType(prev, insertionType).orElse(null);
+        Connect prevCon = conManager.getConByType(prev, insertionType, ConType.MERGE).orElse(null);
         // Найти соединение от prev
         if (prevCon != null) {
             // Есть следующий узел - вставляемся между ними
@@ -90,7 +90,7 @@ public class Canvas extends Pane {
             // Переподключить: prev -> step -> next
             conManager.removeCon(prevCon);
             conManager.createCon(prev, step, insertionType);
-            conManager.createCon(step, nextStep, ConType.DOWN);
+            conManager.createCon(step, nextStep, prevCon.getType()); //BRANCH or DOWN or MERGE
         } else {
             // Нет следующего узла - такого быть не может, но пока есть на старте
             conManager.createCon(prev, step, insertionType);
