@@ -21,7 +21,7 @@ public class ConTool {
     private Group tempArrow;
     private ObjectProperty<Point2D> tempStartPoint;
     private ObjectProperty<Point2D> tempEndPoint;
-    private ConType conType = ConType.DOWN;
+    private ConType conType = ConType.OK;
 
     public ConTool(Canvas canvas, ConManager conManager) {
         this.canvas = canvas;
@@ -110,10 +110,10 @@ public class ConTool {
 
         // Правая треть - RIGHT/YES
         if (xClick > 2 * width / 3) {
-            return ConType.BRANCH;
+            return ConType.IN;
         }
         // Центр - MAIN
-        return ConType.DOWN;
+        return ConType.OK;
     }
 
     /**

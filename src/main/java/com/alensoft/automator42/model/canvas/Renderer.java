@@ -5,7 +5,7 @@ import com.alensoft.automator42.model.step.Step;
 
 import java.util.*;
 
-class GraphLayoutUpdater {
+class Renderer {
 
     private static class StepData {
         int gridX = -1;
@@ -116,7 +116,7 @@ class GraphLayoutUpdater {
         Step nextStep = primaryChild;
         if (mergePoints.contains(nextStep)) {
             StepData mergeData = dataMap.get(nextStep);
-            if (mergeData.gridY == -1 || nextAvailableY > mergeData.gridY) {
+            if (mergeData.gridY == -1 || nextAvailableY > mergeData.gridY+1) {
                 // ПРИСВОЕНИЕ: Узел слияния получает самый низкий Y
                 mergeData.gridY = nextAvailableY;
             }

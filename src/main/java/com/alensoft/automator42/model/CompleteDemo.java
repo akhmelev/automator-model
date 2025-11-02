@@ -184,7 +184,7 @@ public class CompleteDemo extends Application {
 
         ComboBox<ConType> conTypeBox = new ComboBox<>();
         conTypeBox.getItems().addAll(ConType.values());
-        conTypeBox.setValue(ConType.DOWN);
+        conTypeBox.setValue(ConType.OK);
         conTypeBox.setOnAction(e -> {
             conTool.setDefaultConType(conTypeBox.getValue());
             updateStatus("Con mode: " + conTypeBox.getValue());

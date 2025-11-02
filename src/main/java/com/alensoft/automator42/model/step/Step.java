@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class Step extends Pane {
-    public static final int WIDTH = 128;
-    public static final int HEIGHT = 32;
-    public static final int STEP = 32;
+    public static final int WIDTH = 100;
+    public static final int HEIGHT = 50;
+    public static final int STEP = 25;
 
     protected Label label = new Label();
 
@@ -177,6 +177,7 @@ public abstract class Step extends Pane {
 
     public List<Step> getPreviousSteps() {
         return in.stream()
+                .filter(c-> c.getType() != ConType.EMPTY)
                 .sorted()
                 .distinct()
                 .map(Connect::getSource)
