@@ -67,6 +67,9 @@ public class Canvas extends Pane {
         conManager.removeCon(con);
         conManager.createCon(step, next, outType);
         newStep(branch, step, ConType.IN);
+        if (branch.getNextSteps().size() < 2) {
+            conManager.createCon(branch, next, ConType.OUT);
+        }
         return step;
     }
 
@@ -231,6 +234,6 @@ public class Canvas extends Pane {
     }
 
     public void update() {
-        Renderer.updateLayout(root);
+        MaxPathTraversal.updateLayout(root);
     }
 }

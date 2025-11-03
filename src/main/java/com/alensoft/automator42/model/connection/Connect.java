@@ -43,8 +43,8 @@ public class Connect implements Comparable<Connect> {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof Connect other)) return false;
-        return source.equals(other.source) && 
-               target.equals(other.target) && 
+        return source.equals(other.source) &&
+               target.equals(other.target) &&
                type == other.type;
     }
 
@@ -56,5 +56,12 @@ public class Connect implements Comparable<Connect> {
     @Override
     public int compareTo(Connect o) {
         return this.type.compareTo(o.type);
+    }
+
+    @Override
+    public String toString() {
+        return source +
+               "->(" + type + ")" + arrow +
+               "->" + target;
     }
 }

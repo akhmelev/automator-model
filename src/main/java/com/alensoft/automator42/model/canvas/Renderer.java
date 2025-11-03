@@ -7,7 +7,7 @@ import java.util.*;
 
 class Renderer {
 
-    private static class StepData {
+    private static class Tab {
         int gridX = -1;
         int gridY = -1;
     }
@@ -21,7 +21,7 @@ class Renderer {
         }
     }
 
-    private static Map<Step, StepData> dataMap;
+    private static Map<Step, Tab> dataMap;
     private static Set<Step> visited;
     private static Set<Step> mergePoints;
 
@@ -42,7 +42,7 @@ class Renderer {
     // --- Шаг 1: Сбор данных и точек слияния ---
     private static void collectAllStepsAndMerges(Step step) {
         if (dataMap.containsKey(step)) return;
-        dataMap.put(step, new StepData());
+        dataMap.put(step, new Tab());
 
         for (Step child : step.getNextSteps()) {
             if (dataMap.containsKey(child)) {
@@ -54,7 +54,7 @@ class Renderer {
 
     // --- Шаг 2: Рекурсивная раскладка (DFS) ---
     private static LayoutResult placeRecursive(Step current, int currentX, int currentY) {
-        StepData currentData = dataMap.get(current);
+        Tab currentData = dataMap.get(current);
 
         // A. Слияние (Повторное посещение):
         if (visited.contains(current)) {
@@ -115,7 +115,7 @@ class Renderer {
         // Это гарантирует, что end не "убежит" вверх.
         Step nextStep = primaryChild;
         if (mergePoints.contains(nextStep)) {
-            StepData mergeData = dataMap.get(nextStep);
+            Tab mergeData = dataMap.get(nextStep);
             if (mergeData.gridY == -1 || nextAvailableY > mergeData.gridY+1) {
                 // ПРИСВОЕНИЕ: Узел слияния получает самый низкий Y
                 mergeData.gridY = nextAvailableY;
@@ -132,14 +132,14 @@ class Renderer {
 
 
     // --- Шаг 3: Применение координат ---
-    private static void applyLayoutCoordinates(Step root, Map<Step, StepData> dataMap) {
+    private static void applyLayoutCoordinates(Step root, Map<Step, Tab> dataMap) {
         Set<Step> allSteps = dataMap.keySet();
 
         final double X_STEP = 130.0;
         final double Y_STEP = Step.HEIGHT + Step.STEP;
 
         for (Step step : allSteps) {
-            StepData data = dataMap.get(step);
+            Tab data = dataMap.get(step);
 
             if (data.gridX != -1 && data.gridY != -1) {
                 step.setLayoutX(root.getLayoutX() + data.gridX * X_STEP);

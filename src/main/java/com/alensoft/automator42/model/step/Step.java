@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class Step extends Pane {
-    public static final int WIDTH = 100;
-    public static final int HEIGHT = 50;
-    public static final int STEP = 25;
+    public static final int WIDTH = 120;
+    public static final int HEIGHT = 40;
+    public static final int STEP = 0;
 
     protected Label label = new Label();
 
@@ -186,5 +186,10 @@ public abstract class Step extends Pane {
 
     private static class Delta {
         double x, y;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName()+" (" + (int)this.getLayoutX() + ", " + (int)this.getLayoutY() + ") "+label.getText();
     }
 }

@@ -19,8 +19,8 @@ public class Arrow extends Group {
     private final Polyline polyline = new Polyline();
     private final Polygon head = new Polygon();
     private static final double V_SHORTEN = 3;
-    public static final double H_SHORTEN = 5;
-    public static final double H_OFFSET = 12.0;
+    public static final double H_SHORTEN = 6;
+    public static final double H_OFFSET = 10.0;
 
     private final ObjectProperty<Point2D> startProperty;
     private final ObjectProperty<Point2D> endProperty;
@@ -33,7 +33,7 @@ public class Arrow extends Group {
         polyline.setStrokeWidth(2);
         polyline.setStroke(Color.web("#2b2b2b"));
 
-        head.getPoints().addAll(0.0, 0.0, -8.0, -4.0, -8.0, 4.0);
+        head.getPoints().addAll(0.0, 0.0, -9.0, -4.0, -9.0, 4.0);
         head.setFill(Color.web("#2b2b2b"));
         start.addListener((obs, oldV, newV) -> updateArrow());
         end.addListener((obs, oldV, newV) -> updateArrow());
@@ -44,7 +44,7 @@ public class Arrow extends Group {
         conLabel.layoutXProperty().bind(Bindings.createDoubleBinding(() -> (start.getValue().getX()), startProperty, endProperty));
         conLabel.layoutYProperty().bind(Bindings.createDoubleBinding(() -> (start.getValue().getY()), startProperty, endProperty));
 
-        getChildren().add(conLabel);
+//        getChildren().add(conLabel);
 
         getChildren().addAll(polyline, head);
         updateArrow();
