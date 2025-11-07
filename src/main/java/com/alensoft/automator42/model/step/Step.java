@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
 public abstract class Step extends Pane {
     public static final int WIDTH = 120;
     public static final int HEIGHT = 40;
-    public static final int STEP = 0;
+    public static final int STEP = 20;
 
     protected Label label = new Label();
 
