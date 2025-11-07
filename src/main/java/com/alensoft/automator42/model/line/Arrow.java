@@ -44,7 +44,7 @@ public class Arrow extends Group {
         conLabel.layoutXProperty().bind(Bindings.createDoubleBinding(() -> (start.getValue().getX()), startProperty, endProperty));
         conLabel.layoutYProperty().bind(Bindings.createDoubleBinding(() -> (start.getValue().getY()), startProperty, endProperty));
 
-//        getChildren().add(conLabel);
+        getChildren().add(conLabel);
 
         getChildren().addAll(polyline, head);
         updateArrow();

@@ -28,11 +28,6 @@ public class ConManager {
         if (source == target) {
             throw new IllegalArgumentException("Cannot connect step to itself");
         }
-        Optional<Connect> exists = getCon(source, target, type);
-        // Проверка на дублирование
-        if (exists.isPresent()) {
-            return exists.get();
-        }
 
         // Получить точки подключения
         ObjectProperty<Point2D> startPoint = type.getSourcePoint(source);

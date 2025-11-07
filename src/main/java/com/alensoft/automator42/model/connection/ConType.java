@@ -13,8 +13,8 @@ public enum ConType implements Comparable<ConType> {
     // MAIN - прямой поток (bottom → top) использует Arrow
     OK("", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.NORMAL),
     IN("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.IN),
-    EMPTY("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.EMPTY),
-    OUT("No", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OUT);
+    OUT("No", AnchorPoint.BOTTOM, AnchorPoint.TOP, ArrowType.OUT),
+    EMPTY("No", AnchorPoint.RIGHT, AnchorPoint.TOP, ArrowType.EMPTY);
 
     private final String label;
     private final AnchorPoint sourceAnchor;

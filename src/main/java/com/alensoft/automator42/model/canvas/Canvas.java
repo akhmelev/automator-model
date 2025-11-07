@@ -65,11 +65,16 @@ public class Canvas extends Pane {
         Connect con = optCon.orElseThrow();
         Step next = con.getTarget();
         conManager.removeCon(con);
+        conManager.createCon(branch, step, ConType.IN);
         conManager.createCon(step, next, outType);
-        newStep(branch, step, ConType.IN);
+        if (step instanceof Branch) {
+            conManager.createCon(step, next, ConType.EMPTY);
+        }
         if (branch.getNextSteps().size() < 2) {
             conManager.createCon(branch, next, ConType.OUT);
         }
+        getChildren().add(step);
+        update();
         return step;
     }
 

@@ -166,11 +166,17 @@ public abstract class Step extends Pane {
         label.setLayoutY((stepH - labelH) / 2);
     }
 
-    public List<Step> getNextSteps() {
+    public List<Connect> getNextConnects() {
         return out.stream()
-                .filter(c-> c.getType() != ConType.EMPTY)
                 .sorted()
-                .distinct()
+                .toList();
+    }
+
+    public List<Step> getNextSteps() {
+        String debug = label.getText().replaceAll("\\(.+", "")+"(" + in.size() + "/" + out.size() + ")";
+        label.setText(debug);
+        return out.stream()
+                .sorted()
                 .map(Connect::getTarget)
                 .toList();
     }
@@ -178,8 +184,6 @@ public abstract class Step extends Pane {
     public List<Step> getPreviousSteps() {
         return in.stream()
                 .filter(c-> c.getType() != ConType.EMPTY)
-                .sorted()
-                .distinct()
                 .map(Connect::getSource)
                 .toList();
     }
