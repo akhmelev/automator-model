@@ -13,12 +13,13 @@ public class Canvas extends Pane {
     private final Begin root;
     private Step selectedStep;
     private final ConManager conManager;
+    private final Renderer maxPathTraversal;
 
     public Canvas(int x, int y) {
         this.setPrefSize(1000, 700);
         this.setStyle("-fx-background-color: linear-gradient(#f8f8f8, #e8eef8);");
         conManager = new ConManager(this);
-
+        maxPathTraversal=new Renderer(this);
         root = new Begin("Start");
         root.relocate(x, y);
         getChildren().add(root);
@@ -239,6 +240,6 @@ public class Canvas extends Pane {
     }
 
     public void update() {
-        MaxPathTraversal.updateLayout(root);
+        maxPathTraversal.updateLayout(root);
     }
 }

@@ -1,6 +1,5 @@
 package com.alensoft.automator42.model.step;
 
-import com.alensoft.automator42.model.connection.ConType;
 import com.alensoft.automator42.model.connection.Connect;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -181,9 +180,14 @@ public abstract class Step extends Pane {
                 .toList();
     }
 
+    public List<Connect> getPreviousConnects() {
+        return in.stream()
+                .sorted()
+                .toList();
+    }
+
     public List<Step> getPreviousSteps() {
         return in.stream()
-                .filter(c-> c.getType() != ConType.EMPTY)
                 .map(Connect::getSource)
                 .toList();
     }

@@ -7,7 +7,7 @@ public enum ArrowType {
 
     NORMAL(0, 0.5, 1, 0, 0, 1),//down, left or right, down
     IN(0.5, 0, 1, 0, 0, 1), //right, right, down
-    EMPTY(25, 0, 0, 1, 1, 0), //rigth absolute 25 px, down, left
+    EMPTY(10, 0, 0, 1, 1, 0), //rigth absolute 25 px, down, left
 
     OUT(0, 1, 1, 0), //down left
     OUT_TOP(0, 25, Step.WIDTH/2+27, 0,
