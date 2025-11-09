@@ -78,13 +78,13 @@ class Renderer {
             Connect connect = nextConnects.get(i);
             if (connect.getType() == ConType.OK || connect.getType() == ConType.IN)
                 calcX(connect.getTarget(), x + i);
-            if (i > 0 && node instanceof Branch && node.getNextConnects().get(1).getType() != ConType.EMPTY) {
-                int nextLineEnd = lines.computeIfAbsent(depth.get(node) + 1, k -> new ArrayList<>()).size();
-                do {
-                    Null ifElse = new Null();
-                    line.add(ifElse);
-                } while (line.size() < nextLineEnd);
-            }
+//            if (i > 0 && node instanceof Branch && node.getNextConnects().get(1).getType() != ConType.EMPTY) {
+//                int nextLineEnd = lines.computeIfAbsent(depth.get(node) + 1, k -> new ArrayList<>()).size();
+//                do {
+//                    Null ifElse = new Null();
+//                    line.add(ifElse);
+//                } while (line.size() < nextLineEnd);
+//            }
         }
     }
 
