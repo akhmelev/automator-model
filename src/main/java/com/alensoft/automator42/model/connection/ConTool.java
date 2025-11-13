@@ -110,7 +110,7 @@ public class ConTool {
 
         // Правая треть - RIGHT/YES
         if (xClick > 2 * width / 3) {
-            return ConType.IN;
+            return ConType.NO;
         }
         // Центр - MAIN
         return ConType.OK;

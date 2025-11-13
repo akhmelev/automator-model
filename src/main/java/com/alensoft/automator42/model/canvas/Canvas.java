@@ -61,12 +61,12 @@ public class Canvas extends Pane {
             outType = ConType.OUT;
         } else {
             outType = ConType.OK;
-            optCon = conManager.getConByType(branch, ConType.IN);
+            optCon = conManager.getConByType(branch, ConType.NO);
         }
         Connect con = optCon.orElseThrow();
         Step next = con.getTarget();
         conManager.removeCon(con);
-        conManager.createCon(branch, step, ConType.IN);
+        conManager.createCon(branch, step, ConType.NO);
         conManager.createCon(step, next, outType);
         if (step instanceof Branch) {
             conManager.createCon(step, next, ConType.EMPTY);
@@ -131,7 +131,7 @@ public class Canvas extends Pane {
         if (step instanceof Branch) {
             var optCon = conManager.getConByType(step, ConType.EMPTY);
             if (optCon.isEmpty()) {
-                optCon = conManager.getConByType(step, ConType.IN);
+                optCon = conManager.getConByType(step, ConType.NO);
                 if (optCon.isPresent()) {
                     Connect con = optCon.get();
                     Step target = con.getTarget();
@@ -176,7 +176,7 @@ public class Canvas extends Pane {
             if (inType == ConType.OK && out.getType() == ConType.OUT) {
                 inType = ConType.OUT;
             }
-            if (inType == ConType.IN && out.getType() == ConType.OUT) {
+            if (inType == ConType.NO && out.getType() == ConType.OUT) {
                 inType = ConType.EMPTY;
             }
             try {

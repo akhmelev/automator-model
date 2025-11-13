@@ -9,7 +9,7 @@ public class Null extends Step {
     private final Rectangle rect;
     public static final AtomicInteger counter = new AtomicInteger(0);
     private static long time = System.currentTimeMillis();
-    public Null() {
+    public Null(Color fillColor) {
         super("");
         if (System.currentTimeMillis()-time>500){
             counter.set(0);
@@ -19,7 +19,7 @@ public class Null extends Step {
         rect = new Rectangle(Step.WIDTH/2., Step.HEIGHT/3.);
         rect.setArcWidth(6);
         rect.setArcHeight(6);
-        postConstruct(rect, Color.GRAY, Color.WHITE, 1, WIDTH/2, HEIGHT/3);
+        postConstruct(rect, Color.GRAY, fillColor, 1, WIDTH / 2, HEIGHT / 3);
     }
 
     @Override

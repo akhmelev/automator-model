@@ -44,7 +44,7 @@ public class CompleteDemo extends Application {
 
         buildDemoFlowchart();
         Scene scene = new Scene(root, 1400, 900);
-        primaryStage.setTitle("DRAKON Flowchart Editor - AST Preserving Demo");
+        primaryStage.setTitle("Flowchart Editor - AST Preserving Demo");
         primaryStage.setScene(scene);
         primaryStage.show();
 
