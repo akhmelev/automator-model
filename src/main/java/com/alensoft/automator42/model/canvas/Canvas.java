@@ -13,13 +13,13 @@ public class Canvas extends Pane {
     private final Begin root;
     private Step selectedStep;
     private final ConManager conManager;
-    private final Renderer maxPathTraversal;
+    private final TableView view;
 
     public Canvas(int x, int y) {
         this.setPrefSize(1000, 700);
         this.setStyle("-fx-background-color: linear-gradient(#f8f8f8, #e8eef8);");
         conManager = new ConManager(this);
-        maxPathTraversal=new Renderer(this);
+        view =new TableView(this);
         root = new Begin("Start");
         root.relocate(x, y);
         getChildren().add(root);
@@ -58,7 +58,7 @@ public class Canvas extends Pane {
         var optCon = conManager.getConByType(branch, ConType.EMPTY);
         ConType outType;
         if (optCon.isPresent()) {
-            outType = ConType.OUT;
+            outType = ConType.MERGE;
         } else {
             outType = ConType.OK;
             optCon = conManager.getConByType(branch, ConType.NO);
@@ -72,7 +72,7 @@ public class Canvas extends Pane {
             conManager.createCon(step, next, ConType.EMPTY);
         }
         if (branch.getNextSteps().size() < 2) {
-            conManager.createCon(branch, next, ConType.OUT);
+            conManager.createCon(branch, next, ConType.MERGE);
         }
         getChildren().add(step);
         update();
@@ -91,7 +91,7 @@ public class Canvas extends Pane {
         }
         getChildren().add(step);
 
-        Connect prevCon = conManager.getConByType(prev, insertionType, ConType.OUT).orElse(null);
+        Connect prevCon = conManager.getConByType(prev, insertionType, ConType.MERGE).orElse(null);
         // Найти соединение от prev
         if (prevCon != null) {
             // Есть следующий узел - вставляемся между ними
@@ -105,7 +105,7 @@ public class Canvas extends Pane {
             conManager.createCon(prev, step, insertionType);
         }
         if (step instanceof Branch) {
-            var down = conManager.getConByType(step, ConType.OK, ConType.OUT);
+            var down = conManager.getConByType(step, ConType.OK, ConType.MERGE);
             Step next = down.orElseThrow().getTarget();
             conManager.createCon(step, next, ConType.EMPTY);
         }
@@ -166,17 +166,17 @@ public class Canvas extends Pane {
 
     private void reconnectNeighbors(List<Connect> incoming, List<Connect> outgoing) {
         Connect out = outgoing.stream()
-                .filter(con -> con.getType() == ConType.OK || con.getType() == ConType.OUT)
+                .filter(con -> con.getType() == ConType.OK || con.getType() == ConType.MERGE)
                 .findFirst()
                 .orElseThrow();
         for (Connect in : incoming) {
             Step source = in.getSource();
             ConType inType = in.getType();
             Step target = out.getTarget();
-            if (inType == ConType.OK && out.getType() == ConType.OUT) {
-                inType = ConType.OUT;
+            if (inType == ConType.OK && out.getType() == ConType.MERGE) {
+                inType = ConType.MERGE;
             }
-            if (inType == ConType.NO && out.getType() == ConType.OUT) {
+            if (inType == ConType.NO && out.getType() == ConType.MERGE) {
                 inType = ConType.EMPTY;
             }
             try {
@@ -240,6 +240,6 @@ public class Canvas extends Pane {
     }
 
     public void update() {
-        maxPathTraversal.updateLayout(root);
+        view.updateLayout(root);
     }
 }
