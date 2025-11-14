@@ -3,7 +3,6 @@ package com.alensoft.automator42.model.canvas;
 import com.alensoft.automator42.model.connection.ConType;
 import com.alensoft.automator42.model.connection.Connect;
 import com.alensoft.automator42.model.step.Branch;
-import com.alensoft.automator42.model.step.Null;
 import com.alensoft.automator42.model.step.Step;
 
 import java.util.LinkedHashMap;
@@ -29,7 +28,11 @@ class TableView {
         alignY(root);
         table = new Step[maxDepth + 1][2 * mapY.size() + 1];
         calcX(root, 0);
-        alignX(root);
+        int maxCount = mapY.size();
+        while (alignX(root) && 0 < maxCount) {
+            System.out.println("alignX #" + maxCount);
+            maxCount--;
+        }
         draw(root);
     }
 
@@ -42,7 +45,6 @@ class TableView {
                 if (node == null) continue;
                 if (!canvas.getChildren().contains(node)) {
                     canvas.getChildren().add(node);
-//                    node.toBack();
                 }
                 node.setLayoutX(root.getLayoutX() + x * (Step.WIDTH + Step.STEP));
                 node.setLayoutY(root.getLayoutY() + y * (Step.HEIGHT + Step.STEP));
@@ -87,24 +89,35 @@ class TableView {
         }
     }
 
-    private void alignX(Step node) {
-        final int y = mapY.get(node);
+    private boolean alignX(Step node) {
+        boolean swap = false;
         final int x = mapX.get(node);
         for (Connect connect : node.getNextConnects()) {
             Step target = connect.getTarget();
-            alignX(target);
-            final Integer needX = mapX.get(target);
-            if (connect.getType() == ConType.OK && x < needX) {
-                Step[] row = table[y];
-                final int deltaX = needX - x;
-                for (int col = row.length - deltaX - 1; col >= needX; col--) {
-                    row[col] = row[col - deltaX];
-                }
-                for (int i = x; i < needX; i++) {
-                    row[i] = null;
-                }
-                mapX.put(node, needX);
+            swap |= alignX(target);
+            final Integer childX = mapX.get(target);
+            if (connect.getType() == ConType.OK && childX != null && childX != x) {
+                swap |= moveX(node, childX);
             }
         }
+        return swap;
+    }
+
+    private boolean moveX(Step step, int newX) {
+        Integer y = mapY.get(step);
+        Integer x = mapX.get(step);
+        if (y == null || y > table.length) {
+            return false;
+        }
+        Step[] row = table[y];
+        if (x == null || x >= row.length || newX >= row.length) {
+            return false;
+        }
+        Step randomStep = row[newX];
+        row[x] = randomStep;
+        mapX.put(randomStep, x);
+        row[newX] = step;
+        mapX.put(step, newX);
+        return true;
     }
 }
