@@ -3,7 +3,9 @@ package com.alensoft.automator42.model.canvas;
 import com.alensoft.automator42.model.connection.ConType;
 import com.alensoft.automator42.model.connection.Connect;
 import com.alensoft.automator42.model.step.Branch;
+import com.alensoft.automator42.model.step.Null;
 import com.alensoft.automator42.model.step.Step;
+import javafx.scene.paint.Color;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,6 +24,7 @@ class TableView {
 
     public void updateLayout(Step root) {
         if (root == null) return;
+        canvas.getChildren().removeIf(n -> n instanceof Null);
         mapY.clear();
         mapX.clear();
         int maxDepth = calcY(root, 0);
@@ -81,11 +84,28 @@ class TableView {
             while (table[y][currentX] != null) currentX++;
             table[y][currentX] = node;
             mapX.put(node, currentX);
+            if (node instanceof Branch) {
+                fillBranch(node);
+            }
         }
         List<Connect> nextConnects = node.getNextConnects();
         for (int i = 0, nextConnectsSize = nextConnects.size(); i < nextConnectsSize; i++) {
             Connect connect = nextConnects.get(i);
             calcX(connect.getTarget(), currentX + i);
+        }
+    }
+
+    private void fillBranch(Step node) {
+        List<Connect> nextConnects = node.getNextConnects();
+        for (Connect connect : nextConnects) {
+            if (node instanceof Branch &&
+                (connect.getType() == ConType.OK || connect.getType() == ConType.OUT)) {
+                for (int y2 = mapY.get(node) + 1; y2 < mapY.get(connect.getTarget()); y2++) {
+                    Null aNull = new Null(Color.SILVER);
+                    table[y2][mapX.get(node)] = aNull;
+                    mapX.put(aNull, mapX.get(node));
+                }
+            }
         }
     }
 
@@ -97,13 +117,13 @@ class TableView {
             swap |= alignX(target);
             final Integer childX = mapX.get(target);
             if (connect.getType() == ConType.OK && childX != null && childX != x) {
-                swap |= moveX(node, childX);
+                swap |= swapX(node, childX);
             }
         }
         return swap;
     }
 
-    private boolean moveX(Step step, int newX) {
+    private boolean swapX(Step step, int newX) {
         Integer y = mapY.get(step);
         Integer x = mapX.get(step);
         if (y == null || y > table.length) {

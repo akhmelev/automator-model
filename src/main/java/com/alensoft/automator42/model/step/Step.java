@@ -173,7 +173,7 @@ public abstract class Step extends Pane {
 
     public List<Step> getNextSteps() {
         String debug = label.getText().replaceAll("\\(.+", "")+"(" + in.size() + "/" + out.size() + ")";
-        label.setText(debug);
+        //label.setText(debug);
         return out.stream()
                 .sorted()
                 .map(Connect::getTarget)

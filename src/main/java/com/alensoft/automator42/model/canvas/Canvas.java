@@ -58,21 +58,21 @@ public class Canvas extends Pane {
         var optCon = conManager.getConByType(branch, ConType.EMPTY);
         ConType outType;
         if (optCon.isPresent()) {
-            outType = ConType.MERGE;
+            outType = ConType.OUT;
         } else {
             outType = ConType.OK;
-            optCon = conManager.getConByType(branch, ConType.NO);
+            optCon = conManager.getConByType(branch, ConType.BRANCH);
         }
         Connect con = optCon.orElseThrow();
         Step next = con.getTarget();
         conManager.removeCon(con);
-        conManager.createCon(branch, step, ConType.NO);
+        conManager.createCon(branch, step, ConType.BRANCH);
         conManager.createCon(step, next, outType);
         if (step instanceof Branch) {
             conManager.createCon(step, next, ConType.EMPTY);
         }
         if (branch.getNextSteps().size() < 2) {
-            conManager.createCon(branch, next, ConType.MERGE);
+            conManager.createCon(branch, next, ConType.OUT);
         }
         getChildren().add(step);
         update();
@@ -91,7 +91,7 @@ public class Canvas extends Pane {
         }
         getChildren().add(step);
 
-        Connect prevCon = conManager.getConByType(prev, insertionType, ConType.MERGE).orElse(null);
+        Connect prevCon = conManager.getConByType(prev, insertionType, ConType.OUT).orElse(null);
         // Найти соединение от prev
         if (prevCon != null) {
             // Есть следующий узел - вставляемся между ними
@@ -105,7 +105,7 @@ public class Canvas extends Pane {
             conManager.createCon(prev, step, insertionType);
         }
         if (step instanceof Branch) {
-            var down = conManager.getConByType(step, ConType.OK, ConType.MERGE);
+            var down = conManager.getConByType(step, ConType.OK, ConType.OUT);
             Step next = down.orElseThrow().getTarget();
             conManager.createCon(step, next, ConType.EMPTY);
         }
@@ -131,7 +131,7 @@ public class Canvas extends Pane {
         if (step instanceof Branch) {
             var optCon = conManager.getConByType(step, ConType.EMPTY);
             if (optCon.isEmpty()) {
-                optCon = conManager.getConByType(step, ConType.NO);
+                optCon = conManager.getConByType(step, ConType.BRANCH);
                 if (optCon.isPresent()) {
                     Connect con = optCon.get();
                     Step target = con.getTarget();
@@ -166,17 +166,17 @@ public class Canvas extends Pane {
 
     private void reconnectNeighbors(List<Connect> incoming, List<Connect> outgoing) {
         Connect out = outgoing.stream()
-                .filter(con -> con.getType() == ConType.OK || con.getType() == ConType.MERGE)
+                .filter(con -> con.getType() == ConType.OK || con.getType() == ConType.OUT)
                 .findFirst()
                 .orElseThrow();
         for (Connect in : incoming) {
             Step source = in.getSource();
             ConType inType = in.getType();
             Step target = out.getTarget();
-            if (inType == ConType.OK && out.getType() == ConType.MERGE) {
-                inType = ConType.MERGE;
+            if (inType == ConType.OK && out.getType() == ConType.OUT) {
+                inType = ConType.OUT;
             }
-            if (inType == ConType.NO && out.getType() == ConType.MERGE) {
+            if (inType == ConType.BRANCH && out.getType() == ConType.OUT) {
                 inType = ConType.EMPTY;
             }
             try {
